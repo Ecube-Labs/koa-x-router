@@ -1,0 +1,11 @@
+{
+  "include": ["src"],
+  "exclude": ["node_modules", "**/*.test.ts", "test"],
+  "extends": "@ecubelabs/tsconfig/node18.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist"
+  }
+}
