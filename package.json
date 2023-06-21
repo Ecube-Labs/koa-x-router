@@ -20,7 +20,7 @@
     "url": "git@github.com:Ecube-Labs/koa-x-router.git"
   },
   "author": "Ecube Labs Co., Ltd.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@ecubelabs/prettier-config": "^0.0.8",
     "@ecubelabs/tsconfig": "^1.0.0",
@@ -64,5 +64,8 @@
     "yup": {
       "optional": true
     }
+  },
+  "dependencies": {
+    "openapi3-ts": "^4.1.2"
   }
 }
