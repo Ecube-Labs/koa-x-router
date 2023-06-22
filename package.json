@@ -14,6 +14,17 @@
     "package.json",
     "README.md"
   ],
+  "keywords": [
+    "koa",
+    "router",
+    "validation",
+    "documentation",
+    "openapi",
+    "swagger",
+    "joi",
+    "yup",
+    "ecubelabs"
+  ],
   "repository": {
     "type": "git",
     "url": "git@github.com:Ecube-Labs/koa-x-router.git"
