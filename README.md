@@ -1,6 +1,6 @@
 # koa-x-router
 
-`koa-x-router` is a library that extends the functionality of `koa-router` by providing validation and automatic API documentation features. It simplifies the process of defining routes, validating request data, and generating API documentation.
+`koa-x-router` is a library that extends the functionality of `@koa/router` by providing validation and automatic API documentation features. It simplifies the process of defining routes, validating request data, and generating API documentation.
 
 ## Features
 
@@ -13,12 +13,12 @@
 You can install koa-x-router using npm:
 
 ```shell
-npm install koa koa-router koa-x-router joi
+npm install koa @koa/router koa-x-router joi
 ```
 
 ## Usage
 
-To use `koa-x-router`, import it and initialize it with an instance of `koa-router`. Here's a basic example:
+To use `koa-x-router`, import it and initialize it with an instance of `@koa/router`. Here's a basic example:
 
 ```ts
 import Koa from "koa";
