@@ -39,7 +39,15 @@ type SchemaMetadata = {
 };
 
 interface RouteLayerSpec<StateT = any, CustomT = {}> {
-  method: "get" | "post" | "put" | "patch" | "delete";
+  method:
+    | "get"
+    | "post"
+    | "delete"
+    | "put"
+    | "options"
+    | "head"
+    | "patch"
+    | "trace";
   path: string;
   meta?: {
     // compatible for `koa-joi-router-docs`
