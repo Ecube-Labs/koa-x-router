@@ -4,6 +4,7 @@ import {
   ExternalDocumentationObject,
   InfoObject,
   OpenApiBuilder,
+  ParameterObject,
   PathItemObject,
   PathsObject,
   RequestBodyObject,
@@ -152,7 +153,7 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
             tags: docMetadata?.tags,
             responses: this.getOASResponseSchema(layer),
             requestBody: this.getOASRequestBodySchema(layer),
-            // parameters: [], // TODO: generate parameter schema
+            parameters: this.getOASRequestParameterSchema(layer),
           };
         });
 
@@ -160,6 +161,62 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
       }
     });
     return pathItemByPath;
+  }
+
+  private getOASRequestParameterSchema(
+    layer: KoaRouter.Layer
+  ): ParameterObject[] | undefined {
+    const {
+      header,
+      _headerAdaptor,
+      query,
+      _queryAdaptor,
+      params,
+      _paramsAdaptor,
+    } = layer.opts.validate || {};
+
+    const parameters: ParameterObject[] = [];
+
+    if (header && _headerAdaptor) {
+      const schema = _headerAdaptor.schemaToOpenApiSchema(header);
+      if (schema.properties) {
+        parameters.push(
+          ...Object.entries(schema.properties).map(([name, schema2]) => ({
+            name,
+            in: "header" as const,
+            schema: schema2,
+          }))
+        );
+      }
+    }
+
+    if (query && _queryAdaptor) {
+      const schema = _queryAdaptor.schemaToOpenApiSchema(query);
+      if (schema.properties) {
+        parameters.push(
+          ...Object.entries(schema.properties).map(([name, schema2]) => ({
+            name,
+            in: "query" as const,
+            schema: schema2,
+          }))
+        );
+      }
+    }
+
+    if (params && _paramsAdaptor) {
+      const schema = _paramsAdaptor.schemaToOpenApiSchema(params);
+      if (schema.properties) {
+        parameters.push(
+          ...Object.entries(schema.properties).map(([name, schema2]) => ({
+            name,
+            in: "path" as const,
+            schema: schema2,
+          }))
+        );
+      }
+    }
+
+    return parameters.length ? parameters : undefined;
   }
 
   private getOASRequestBodySchema(

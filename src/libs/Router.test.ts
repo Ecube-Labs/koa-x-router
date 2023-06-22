@@ -320,6 +320,15 @@ describe("koa-x-router API work with Joi", () => {
           get: {
             summary: "Hello World",
             description: "this is description",
+            parameters: [
+              {
+                in: "query",
+                name: "name",
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
             responses: { "200": { description: "Success" } },
           },
         },
@@ -487,6 +496,9 @@ describe("koa-x-router API work with Joi", () => {
           },
         },
         validate: {
+          params: Joi.object({
+            id: Joi.number().positive().integer().required(),
+          }),
           output: {
             200: Joi.object({
               name: Joi.string().required(),
@@ -521,6 +533,15 @@ describe("koa-x-router API work with Joi", () => {
           get: {
             summary: "Hello World",
             description: "this is description",
+            parameters: [
+              {
+                in: "query",
+                name: "name",
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
             responses: { "200": { description: "Success" } },
           },
         },
@@ -568,6 +589,16 @@ describe("koa-x-router API work with Joi", () => {
         "/child2/users/:id": {
           get: {
             summary: "Details User",
+            parameters: [
+              {
+                in: "path",
+                name: "id",
+                schema: {
+                  minimum: 1,
+                  type: "integer",
+                },
+              },
+            ],
             responses: {
               "200": {
                 description: "Success",
