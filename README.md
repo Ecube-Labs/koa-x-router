@@ -18,6 +18,8 @@ npm install koa @koa/router koa-x-router joi
 
 ## Usage
 
+[Demo](https://stackblitz.com/edit/stackblitz-starters-mmprm1?file=index.ts)
+
 To use `koa-x-router`, import it and initialize it with an instance of `@koa/router`. Here's a basic example:
 
 ```ts
