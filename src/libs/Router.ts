@@ -1,4 +1,4 @@
-import KoaRouter from "koa-router";
+import KoaRouter from "@koa/router";
 import {
   ComponentsObject,
   ExternalDocumentationObject,
@@ -14,8 +14,8 @@ import {
   TagObject,
 } from "openapi3-ts/oas31";
 
-declare module "koa-router" {
-  export interface ILayerOptions {
+declare module "@koa/router" {
+  export interface LayerOptions {
     validate?: XRouterValidateProperties;
   }
 
@@ -47,7 +47,7 @@ interface RouteLayerSpec<StateT = any, CustomT = {}> {
     document?: SchemaMetadata; // === swagger
   };
   validate?: XRouterValidateProperties;
-  handler: KoaRouter.IMiddleware<StateT, CustomT>;
+  handler: KoaRouter.Middleware<StateT, CustomT>;
 }
 
 /**
@@ -63,7 +63,7 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
   constructor({
     adaptors,
     ...pt
-  }: KoaRouter.IRouterOptions & { adaptors?: XRouterAdaptor[] } = {}) {
+  }: KoaRouter.RouterOptions & { adaptors?: XRouterAdaptor[] } = {}) {
     super(pt);
 
     this.adaptors =
@@ -253,7 +253,7 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
 
   private makeValidateMiddleware(
     layer: KoaRouter.Layer
-  ): KoaRouter.IMiddleware<any, any> {
+  ): KoaRouter.Middleware<any, any> {
     return async (ctx, next) => {
       const {
         opts: { validate },
