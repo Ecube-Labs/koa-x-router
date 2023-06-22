@@ -39,7 +39,7 @@ type SchemaMetadata = {
   [key: string]: any;
 };
 
-interface RouteLayerSpec<StateT = any, CustomT = {}> {
+export interface RouteLayerSpec<StateT = any, CustomT = {}> {
   method:
     | "get"
     | "post"
