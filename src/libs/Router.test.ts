@@ -312,68 +312,43 @@ describe("koa-x-router API work with Joi", () => {
       },
     });
 
-    expect(spec).toEqual(
-      JSON.stringify({
-        openapi: "3.1.0",
-        info: { title: "koa-x-router", version: "1.0.0" },
-        paths: {
-          "/": {
-            get: {
-              summary: "Hello World",
-              description: "this is description",
-              responses: { "200": { description: "Success" } },
+    expect(JSON.parse(spec)).toEqual({
+      openapi: "3.1.0",
+      info: { title: "koa-x-router", version: "1.0.0" },
+      paths: {
+        "/": {
+          get: {
+            summary: "Hello World",
+            description: "this is description",
+            responses: { "200": { description: "Success" } },
+          },
+        },
+        "/users": {
+          post: {
+            summary: "Create User",
+            responses: { "200": { description: "Success" } },
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: { name: { type: "string" } },
+                    additionalProperties: false,
+                  },
+                },
+              },
             },
           },
-          "/users": {
-            post: {
-              summary: "Create User",
-              responses: { "200": { description: "Success" } },
-              requestBody: {
+          get: {
+            summary: "List Users",
+            responses: {
+              "200": {
+                description: "Success",
                 content: {
                   "application/json": {
                     schema: {
-                      type: "object",
-                      properties: { name: { type: "string" } },
-                      additionalProperties: false,
-                    },
-                  },
-                },
-              },
-            },
-            get: {
-              summary: "List Users",
-              responses: {
-                "200": {
-                  description: "Success",
-                  content: {
-                    "application/json": {
-                      schema: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            name: { type: "string" },
-                            age: { type: "number", format: "float" },
-                          },
-                          required: ["name", "age"],
-                          additionalProperties: false,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          "/users/:id": {
-            get: {
-              summary: "Details User",
-              responses: {
-                "200": {
-                  description: "Success",
-                  content: {
-                    "application/json": {
-                      schema: {
+                      type: "array",
+                      items: {
                         type: "object",
                         properties: {
                           name: { type: "string" },
@@ -385,16 +360,203 @@ describe("koa-x-router API work with Joi", () => {
                     },
                   },
                 },
-                "404": {
-                  description: "User not found",
-                  content: {
-                    "application/json": {
-                      schema: {
+              },
+            },
+          },
+        },
+        "/users/:id": {
+          get: {
+            summary: "Details User",
+            responses: {
+              "200": {
+                description: "Success",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string" },
+                        age: { type: "number", format: "float" },
+                      },
+                      required: ["name", "age"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+              },
+              "404": {
+                description: "User not found",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: { message: { type: "string" } },
+                      required: ["message"],
+                      additionalProperties: false,
+                      description: "User not found",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it("Generate OpenAPI Spec from nested routes", async () => {
+    const rootRouter = new Router({
+      adaptors: [JoiAdaptor],
+    });
+    const childRouter1 = new Router({
+      adaptors: [JoiAdaptor],
+    });
+    const childRouter2 = new Router({
+      adaptors: [JoiAdaptor],
+    });
+
+    rootRouter.add({
+      method: "get",
+      path: "/",
+      meta: {
+        document: {
+          summary: "Hello World",
+          description: "this is description",
+        },
+      },
+      validate: {
+        query: Joi.object({
+          name: Joi.string(),
+        }),
+      },
+      handler: async (ctx) => {
+        ctx.body = `Hello World, ${ctx.query.name}`;
+      },
+    });
+
+    childRouter1.add([
+      {
+        method: "post",
+        path: "/users",
+        meta: {
+          document: {
+            summary: "Create User",
+          },
+        },
+        validate: {
+          body: Joi.object({
+            name: Joi.string(),
+          }),
+        },
+        handler: async (ctx) => {
+          ctx.status = 201;
+          ctx.body = `Created`;
+        },
+      },
+      {
+        method: "get",
+        path: "/users",
+        meta: {
+          document: {
+            summary: "List Users",
+          },
+        },
+        validate: {
+          output: {
+            200: Joi.array().items(
+              Joi.object({
+                name: Joi.string().required(),
+                age: Joi.number().required(),
+              })
+            ),
+          },
+        },
+        handler: async (ctx) => {
+          ctx.body = [];
+        },
+      },
+    ]);
+    childRouter2.add([
+      {
+        method: "get",
+        path: "/users/:id",
+        meta: {
+          document: {
+            summary: "Details User",
+          },
+        },
+        validate: {
+          output: {
+            200: Joi.object({
+              name: Joi.string().required(),
+              age: Joi.number().required(),
+            }),
+            404: Joi.object({
+              message: Joi.string().required(),
+            }).description("User not found"),
+          },
+        },
+        handler: async (ctx) => {
+          ctx.body = {};
+        },
+      },
+    ]);
+
+    rootRouter.use("/child1", childRouter1.routes());
+    rootRouter.use("/child2", childRouter2.routes());
+
+    const spec = rootRouter.generateOpenApiSpecJson({
+      info: {
+        title: "koa-x-router",
+        version: "1.0.0",
+      },
+    });
+
+    expect(JSON.parse(spec)).toEqual({
+      openapi: "3.1.0",
+      info: { title: "koa-x-router", version: "1.0.0" },
+      paths: {
+        "/": {
+          get: {
+            summary: "Hello World",
+            description: "this is description",
+            responses: { "200": { description: "Success" } },
+          },
+        },
+        "/child1/users": {
+          post: {
+            summary: "Create User",
+            responses: { "200": { description: "Success" } },
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: { name: { type: "string" } },
+                    additionalProperties: false,
+                  },
+                },
+              },
+            },
+          },
+          get: {
+            summary: "List Users",
+            responses: {
+              "200": {
+                description: "Success",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "array",
+                      items: {
                         type: "object",
-                        properties: { message: { type: "string" } },
-                        required: ["message"],
+                        properties: {
+                          name: { type: "string" },
+                          age: { type: "number", format: "float" },
+                        },
+                        required: ["name", "age"],
                         additionalProperties: false,
-                        description: "User not found",
                       },
                     },
                   },
@@ -403,11 +565,46 @@ describe("koa-x-router API work with Joi", () => {
             },
           },
         },
-      })
-    );
+        "/child2/users/:id": {
+          get: {
+            summary: "Details User",
+            responses: {
+              "200": {
+                description: "Success",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string" },
+                        age: { type: "number", format: "float" },
+                      },
+                      required: ["name", "age"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+              },
+              "404": {
+                description: "User not found",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: { message: { type: "string" } },
+                      required: ["message"],
+                      additionalProperties: false,
+                      description: "User not found",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   });
-
-  // TODO: Nested router
 
   // TODO: prefix
 });
