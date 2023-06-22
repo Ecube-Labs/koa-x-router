@@ -1,6 +1,6 @@
 {
   "name": "koa-x-router",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "`koa-x-router` is a library that extends the functionality of `koa-router` by providing validation and automatic API documentation features. It simplifies the process of defining routes, validating request data, and generating API documentation.",
   "main": "dist/index.js",
   "scripts": {
