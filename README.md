@@ -31,6 +31,7 @@ const app = new Koa();
 const router = new Router({
   adaptors: [JoiAdaptor], // <== Important!
 });
+const docRouter = new Router();
 
 // Define a route with validation
 router.add({
@@ -54,6 +55,34 @@ router.add({
   },
 });
 
+docRouter.get('/', (ctx) => {
+  ctx.body = `<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>API Documentation</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+    <style>body{margin: 0;padding: 0;}</style>
+  </head>
+  <body>
+    <redoc spec-url='/openapi.json' lazy-rendering></redoc>
+    <script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"></script>
+  </body>
+  </html>`;
+});
+
+docRouter.get('/openapi.json', (ctx) => {
+  ctx.body = router.generateOpenApiSpecJson({
+    info: {
+      title: 'koa-x-router Demo API Docs',
+      version: '1.0.0',
+    },
+  });
+});
+
+app.use(docRouter.routes());
 app.use(bodyParser());
 app.use(router.routes());
 
@@ -62,7 +91,7 @@ app.listen(3000, () => {
 });
 ```
 
-You can also implement your custom adapter by implementing the XRouterAdaptor interface.
+You can also implement your custom adapter by implementing the `XRouterAdaptor` interface.
 This allows you to use your preferred validation library for route validation.
 
 ## Contributing
