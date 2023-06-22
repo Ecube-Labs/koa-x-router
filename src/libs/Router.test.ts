@@ -294,6 +294,9 @@ describe("koa-x-router API work with Joi", () => {
               name: Joi.string().required(),
               age: Joi.number().required(),
             }),
+            404: Joi.object({
+              message: Joi.string().required(),
+            }).description("User not found"),
           },
         },
         handler: async (ctx) => {
@@ -312,32 +315,91 @@ describe("koa-x-router API work with Joi", () => {
     expect(spec).toEqual(
       JSON.stringify({
         openapi: "3.1.0",
-        info: {
-          title: "koa-x-router",
-          version: "1.0.0",
-        },
+        info: { title: "koa-x-router", version: "1.0.0" },
         paths: {
           "/": {
             get: {
               summary: "Hello World",
               description: "this is description",
-              responses: {},
+              responses: { "200": { description: "Success" } },
             },
           },
           "/users": {
             post: {
               summary: "Create User",
-              responses: {},
+              responses: { "200": { description: "Success" } },
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: { name: { type: "string" } },
+                      additionalProperties: false,
+                    },
+                  },
+                },
+              },
             },
             get: {
               summary: "List Users",
-              responses: {},
+              responses: {
+                "200": {
+                  description: "Success",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            name: { type: "string" },
+                            age: { type: "number", format: "float" },
+                          },
+                          required: ["name", "age"],
+                          additionalProperties: false,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
           "/users/:id": {
             get: {
               summary: "Details User",
-              responses: {},
+              responses: {
+                "200": {
+                  description: "Success",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: { type: "string" },
+                          age: { type: "number", format: "float" },
+                        },
+                        required: ["name", "age"],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                },
+                "404": {
+                  description: "User not found",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: { message: { type: "string" } },
+                        required: ["message"],
+                        additionalProperties: false,
+                        description: "User not found",
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },

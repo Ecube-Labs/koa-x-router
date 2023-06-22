@@ -3,11 +3,11 @@ import {
   ComponentsObject,
   ExternalDocumentationObject,
   InfoObject,
-  OpenAPIObject,
   OpenApiBuilder,
-  OperationObject,
   PathItemObject,
   PathsObject,
+  RequestBodyObject,
+  ResponsesObject,
   SchemaObject,
   SecurityRequirementObject,
   ServerObject,
@@ -108,7 +108,6 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
       ...metadata,
     });
 
-    // TODO: generate openapi spec from routes
     const paths = this.getRoutePaths(this.stack);
     Object.entries(paths).forEach(([path, pathItem]) => {
       builder.addPath(path, pathItem);
@@ -143,7 +142,9 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
             description: docMetadata?.description,
             deprecated: docMetadata?.deprecated,
             tags: docMetadata?.tags,
-            responses: {},
+            responses: this.getOASResponseSchema(layer),
+            requestBody: this.getOASRequestBodySchema(layer),
+            // parameters: [], // TODO: generate parameter schema
           };
         });
 
@@ -151,6 +152,53 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
       }
     });
     return pathItemByPath;
+  }
+
+  private getOASRequestBodySchema(
+    layer: KoaRouter.Layer
+  ): RequestBodyObject | undefined {
+    const { body, _bodyAdaptor } = layer.opts.validate || {};
+
+    if (!body) {
+      return;
+    }
+
+    return {
+      content: {
+        // TODO: json 말고 multipart같은 다른 타입도 지원해야 하는가?
+        "application/json": {
+          schema: _bodyAdaptor?.schemaToOpenApiSchema(body),
+        },
+      },
+    };
+  }
+
+  private getOASResponseSchema(layer: KoaRouter.Layer): ResponsesObject {
+    const { output, _outputAdaptor } = layer.opts.validate || {};
+
+    // NOTE: 스펙상 필수 값이기 때문에 기본 응답으로 넣는다.
+    if (!output) {
+      return {
+        200: {
+          description: "Success",
+        },
+      };
+    }
+
+    return Object.entries(output).reduce(
+      (acc, [statusCode, schemaLike]) => ({
+        ...acc,
+        [String(statusCode).split("-")[0]]: ((schema) => ({
+          description: schema?.description || "Success",
+          content: {
+            "application/json": {
+              schema,
+            },
+          },
+        }))(_outputAdaptor?.schemaToOpenApiSchema(schemaLike)),
+      }),
+      {}
+    );
   }
 
   private registerValidator(
