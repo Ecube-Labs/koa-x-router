@@ -31,6 +31,16 @@ declare module "@koa/router" {
 
 export interface SchemaLike {}
 
+type SupportMethod =
+  | "get"
+  | "post"
+  | "delete"
+  | "put"
+  | "options"
+  | "head"
+  | "patch"
+  | "trace";
+
 type SchemaMetadata = {
   summary: string;
   description?: string;
@@ -40,15 +50,7 @@ type SchemaMetadata = {
 };
 
 export interface RouteLayerSpec<StateT = any, CustomT = {}> {
-  method:
-    | "get"
-    | "post"
-    | "delete"
-    | "put"
-    | "options"
-    | "head"
-    | "patch"
-    | "trace";
+  method: SupportMethod | Uppercase<SupportMethod>;
   path: string;
   meta?: {
     // compatible for `koa-joi-router-docs`
@@ -137,15 +139,7 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
             return;
 
           pathItem[
-            method.toLowerCase() as
-              | "get"
-              | "post"
-              | "delete"
-              | "put"
-              | "options"
-              | "head"
-              | "patch"
-              | "trace"
+            method.toLowerCase() as SupportMethod | Uppercase<SupportMethod>
           ] = {
             summary: docMetadata?.summary,
             description: docMetadata?.description,
