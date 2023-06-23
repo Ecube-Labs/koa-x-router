@@ -138,9 +138,7 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
           if (layer.methods.length > 1 && method.toLowerCase() === "head")
             return;
 
-          pathItem[
-            method.toLowerCase() as SupportMethod | Uppercase<SupportMethod>
-          ] = {
+          pathItem[method.toLowerCase() as SupportMethod] = {
             summary: docMetadata?.summary,
             description: docMetadata?.description,
             deprecated: docMetadata?.deprecated,
