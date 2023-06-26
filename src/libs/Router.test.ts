@@ -160,9 +160,11 @@ describe("koa-x-router API work with Joi", () => {
         path: "/output1",
         validate: {
           output: {
-            200: Joi.object({
-              id: Joi.valid("tim", "charlie").required(),
-            }),
+            200: {
+              body: Joi.object({
+                id: Joi.valid("tim", "charlie").required(),
+              }),
+            },
           },
         },
         handler: async (ctx) => {
@@ -176,10 +178,14 @@ describe("koa-x-router API work with Joi", () => {
         path: "/output2",
         validate: {
           output: {
-            200: Joi.object({
-              id: Joi.valid("tim", "charlie").required(),
-            }),
-            201: Joi.string().valid("created~~").required(),
+            200: {
+              body: Joi.object({
+                id: Joi.valid("tim", "charlie").required(),
+              }),
+            },
+            201: {
+              body: Joi.string().valid("created~~").required(),
+            },
           },
         },
         handler: async (ctx) => {
@@ -296,7 +302,7 @@ describe("koa-x-router API work with Joi", () => {
     });
   });
 
-  it("should be validate ctx.params and cast value inject", async () => {
+  it("should be validate ctx.request.params and cast value inject", async () => {
     const app = getApp();
     const router = new Router({
       adaptors: [JoiAdaptor],
@@ -400,14 +406,16 @@ describe("koa-x-router API work with Joi", () => {
         path: "/output",
         validate: {
           output: {
-            200: Joi.object({
-              id: Joi.number().required(),
-              collection: Joi.array().items(
-                Joi.object({
-                  num: Joi.number().required(),
-                })
-              ),
-            }).options({ stripUnknown: true }),
+            200: {
+              body: Joi.object({
+                id: Joi.number().required(),
+                collection: Joi.array().items(
+                  Joi.object({
+                    num: Joi.number().required(),
+                  })
+                ),
+              }).options({ stripUnknown: true }),
+            },
           },
         },
         handler: async (ctx) => {
@@ -498,12 +506,14 @@ describe("koa-x-router API work with Joi", () => {
         },
         validate: {
           output: {
-            200: Joi.array().items(
-              Joi.object({
-                name: Joi.string().required(),
-                age: Joi.number().required(),
-              })
-            ),
+            200: {
+              body: Joi.array().items(
+                Joi.object({
+                  name: Joi.string().required(),
+                  age: Joi.number().required(),
+                })
+              ),
+            },
           },
         },
         handler: async (ctx) => {
@@ -520,13 +530,17 @@ describe("koa-x-router API work with Joi", () => {
         },
         validate: {
           output: {
-            200: Joi.object({
-              name: Joi.string().required(),
-              age: Joi.number().required(),
-            }),
-            404: Joi.object({
-              message: Joi.string().required(),
-            }).description("User not found"),
+            200: {
+              body: Joi.object({
+                name: Joi.string().required(),
+                age: Joi.number().required(),
+              }),
+            },
+            404: {
+              body: Joi.object({
+                message: Joi.string().required(),
+              }).description("User not found"),
+            },
           },
         },
         handler: async (ctx) => {
@@ -703,12 +717,14 @@ describe("koa-x-router API work with Joi", () => {
         },
         validate: {
           output: {
-            200: Joi.array().items(
-              Joi.object({
-                name: Joi.string().required(),
-                age: Joi.number().required(),
-              })
-            ),
+            200: {
+              body: Joi.array().items(
+                Joi.object({
+                  name: Joi.string().required(),
+                  age: Joi.number().required(),
+                })
+              ),
+            },
           },
         },
         handler: async (ctx) => {
@@ -730,13 +746,17 @@ describe("koa-x-router API work with Joi", () => {
             id: Joi.number().positive().integer().required(),
           }),
           output: {
-            200: Joi.object({
-              name: Joi.string().required(),
-              age: Joi.number().required(),
-            }),
-            404: Joi.object({
-              message: Joi.string().required(),
-            }).description("User not found"),
+            200: {
+              body: Joi.object({
+                name: Joi.string().required(),
+                age: Joi.number().required(),
+              }),
+            },
+            404: {
+              body: Joi.object({
+                message: Joi.string().required(),
+              }).description("User not found"),
+            },
           },
         },
         handler: async (ctx) => {
@@ -928,12 +948,14 @@ describe("koa-x-router API work with Joi", () => {
         },
         validate: {
           output: {
-            200: Joi.array().items(
-              Joi.object({
-                name: Joi.string().required(),
-                age: Joi.number().required(),
-              })
-            ),
+            200: {
+              body: Joi.array().items(
+                Joi.object({
+                  name: Joi.string().required(),
+                  age: Joi.number().required(),
+                })
+              ),
+            },
           },
         },
         handler: async (ctx) => {
@@ -955,13 +977,17 @@ describe("koa-x-router API work with Joi", () => {
             id: Joi.number().positive().integer().required(),
           }),
           output: {
-            200: Joi.object({
-              name: Joi.string().required(),
-              age: Joi.number().required(),
-            }),
-            404: Joi.object({
-              message: Joi.string().required(),
-            }).description("User not found"),
+            200: {
+              body: Joi.object({
+                name: Joi.string().required(),
+                age: Joi.number().required(),
+              }),
+            },
+            404: {
+              body: Joi.object({
+                message: Joi.string().required(),
+              }).description("User not found"),
+            },
           },
         },
         handler: async (ctx) => {

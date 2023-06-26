@@ -17,6 +17,7 @@ npm install koa @koa/router koa-x-router joi
 ```
 
 ### with TypeScript
+
 ```shell
 npm install @types/koa @types/koa__router -D
 ```
@@ -44,15 +45,17 @@ router.add({
   path: "/users",
   validate: {
     query: Joi.object({
-        name: Joi.string(),
+      name: Joi.string(),
     }),
     output: {
-      200: Joi.array().items(
-        Joi.object({
-          name: Joi.string().required(),
-          age: Joi.number().positive().required(),
-        })
-      ),
+      200: {
+        body: Joi.array().items(
+          Joi.object({
+            name: Joi.string().required(),
+            age: Joi.number().positive().required(),
+          })
+        ),
+      },
     },
   },
   handler: async (ctx) => {
@@ -60,7 +63,7 @@ router.add({
   },
 });
 
-docRouter.get('/', (ctx) => {
+docRouter.get("/", (ctx) => {
   ctx.body = `<!DOCTYPE html>
   <html>
   <head>
@@ -78,11 +81,11 @@ docRouter.get('/', (ctx) => {
   </html>`;
 });
 
-docRouter.get('/openapi.json', (ctx) => {
+docRouter.get("/openapi.json", (ctx) => {
   ctx.body = router.generateOpenApiSpecJson({
     info: {
-      title: 'koa-x-router Demo API Docs',
-      version: '1.0.0',
+      title: "koa-x-router Demo API Docs",
+      version: "1.0.0",
     },
   });
 });
@@ -100,8 +103,10 @@ You can also implement your custom adapter by implementing the `XRouterAdaptor` 
 This allows you to use your preferred validation library for route validation.
 
 ## Contributing
+
 Contributions are welcome!
 If you have any suggestions, bug reports, or feature requests, please open an issue.
 
 ## License
+
 This project is licensed under the Apache License 2.0.

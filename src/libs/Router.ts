@@ -254,16 +254,18 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
     }
 
     return Object.entries(output).reduce(
-      (acc, [statusCode, schemaLike]) => ({
+      (acc, [statusCode, { body: schemaLike }]) => ({
         ...acc,
-        [String(statusCode).split("-")[0]]: ((schema) => ({
-          description: schema?.description || "Success",
-          content: {
-            "application/json": {
-              schema,
+        [String(statusCode).split("-")[0]]:
+          schemaLike &&
+          ((schema) => ({
+            description: schema?.description || "Success",
+            content: {
+              "application/json": {
+                schema,
+              },
             },
-          },
-        }))(_outputAdaptor?.schemaToOpenApiSchema(schemaLike)),
+          }))(_outputAdaptor?.schemaToOpenApiSchema(schemaLike)),
       }),
       {}
     );
@@ -301,9 +303,12 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
         );
       }
       if (layer.opts.validate.output) {
-        layer.opts.validate._outputAdaptor = this.getAdaptorFromSchema(
-          Object.values(layer.opts.validate.output)[0]
-        );
+        const outputSchema = Object.values(layer.opts.validate.output)[0];
+        if (outputSchema?.body) {
+          layer.opts.validate._outputAdaptor = this.getAdaptorFromSchema(
+            outputSchema.body
+          );
+        }
       }
 
       layer.stack.unshift(this.makeValidateMiddleware(layer));
@@ -388,14 +393,14 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
             this.isIncludedStatusCodeRange(statusCodeRange, Number(ctx.status))
           ) || [];
 
-        if (outputSchema) {
+        if (outputSchema?.body) {
           const outputHandler = (values: any) => {
             if (values && Object.keys(values).length && ctx.body) {
               ctx.body = values;
             }
           };
           await _outputAdaptor
-            .validate(outputSchema, ctx.body)
+            .validate(outputSchema.body, ctx.body)
             .then(outputHandler)
             .catch(errorHandler);
         }
@@ -431,7 +436,10 @@ interface XRouterValidateProperties {
    * @example { 200: { ... }, '400-499': { ... } }
    */
   output?: {
-    [statusCode: number | string]: SchemaLike;
+    [statusCode: number | string]: {
+      // headers?: SchemaLike;
+      body?: SchemaLike;
+    };
   };
   _outputAdaptor?: XRouterAdaptor; // Router에 route 추가할때 스키마 기반으로 추론하여 지정
 
