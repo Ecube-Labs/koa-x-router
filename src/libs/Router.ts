@@ -119,7 +119,7 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
       ...metadata,
     });
 
-    const paths = this.getRoutePaths(this.stack);
+    const paths = this.getOASByStack(this.stack);
     Object.entries(paths).forEach(([path, pathItem]) => {
       builder.addPath(path, pathItem);
     });
@@ -127,7 +127,7 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
     return builder.getSpecAsJson();
   }
 
-  private getRoutePaths(stack: KoaRouter.Layer[]) {
+  private getOASByStack(stack: KoaRouter.Layer[]) {
     const pathItemByPath: Record<string, PathItemObject> = {};
     stack.forEach((layer) => {
       if (layer.path && layer.methods) {
@@ -335,16 +335,38 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
         return ctx.throw(err);
       };
 
+      const inputHandlerFactory =
+        (reqPropName: "headers" | "params" | "query" | "body") =>
+        (values: any) => {
+          if (
+            values &&
+            Object.keys(values).length &&
+            ctx.request[reqPropName]
+          ) {
+            if (reqPropName === "params") {
+              Object.assign(ctx.params, values);
+            } else {
+              Object.assign(ctx.request[reqPropName], values);
+            }
+          }
+        };
+
       await _headerAdaptor
         ?.validate(header!, ctx.request.headers)
+        .then(inputHandlerFactory("headers"))
         .catch(errorHandler);
       await _paramsAdaptor
-        ?.validate(params!, ctx.request.params)
+        ?.validate(params!, ctx.params)
+        .then(inputHandlerFactory("params"))
         .catch(errorHandler);
       await _queryAdaptor
         ?.validate(query!, ctx.request.query)
+        .then(inputHandlerFactory("query"))
         .catch(errorHandler);
-      await _bodyAdaptor?.validate(body!, ctx.request.body).catch(errorHandler);
+      await _bodyAdaptor
+        ?.validate(body!, ctx.request.body)
+        .then(inputHandlerFactory("body"))
+        .catch(errorHandler);
 
       await next();
 
@@ -355,8 +377,14 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
           ) || [];
 
         if (outputSchema) {
+          const outputHandler = (values: any) => {
+            if (values && Object.keys(values).length && ctx.body) {
+              ctx.body = values;
+            }
+          };
           await _outputAdaptor
             .validate(outputSchema, ctx.body)
+            .then(outputHandler)
             .catch(errorHandler);
         }
       }
@@ -411,8 +439,9 @@ export interface XRouterAdaptor {
 
   /**
    * This method validates the data with the schema.
+   * Return value is injecting to `ctx.request[query | headers | body]` or `ctx.params` or (output)`ctx.body`.
    */
-  validate(schemaLike: SchemaLike, data: any): Promise<void>;
+  validate(schemaLike: SchemaLike, data: any): Promise<any>;
 
   /**
    * This method converts the schema to OpenAPI schema.

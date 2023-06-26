@@ -33,7 +33,7 @@ export const JoiAdaptor: XRouterAdaptor = {
       ? schemaLike
       : Joi.object(schemaLike);
 
-    await schema.validateAsync(data);
+    return await schema.validateAsync(data);
   },
 
   schemaToOpenApiSchema(schemaLike) {

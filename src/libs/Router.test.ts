@@ -216,6 +216,236 @@ describe("koa-x-router API work with Joi", () => {
     expect(response6.text).toBe('"value" must be [created~~]');
   });
 
+  it("should be validate ctx.request.header and cast value inject", async () => {
+    const app = getApp();
+    const router = new Router({
+      adaptors: [JoiAdaptor],
+    });
+    app.use(koaBodyParser()).use(router.routes());
+
+    router.add([
+      {
+        method: "get",
+        path: "/header",
+        validate: {
+          header: Joi.object({
+            numbertest: Joi.number().required(),
+          }).options({
+            allowUnknown: true,
+          }),
+        },
+        handler: async (ctx) => {
+          ctx.body = {
+            headers: ctx.request.headers,
+          };
+        },
+      },
+    ]);
+
+    const response = await request(app.callback()).get("/header").set({
+      numbertest: "12345",
+    });
+    expect(response.status).toBe(200);
+    expect(response.body).toStrictEqual({
+      headers: expect.objectContaining({
+        numbertest: 12345,
+      }),
+    });
+  });
+
+  it("should be validate ctx.request.query and cast value inject", async () => {
+    const app = getApp();
+    const router = new Router({
+      adaptors: [JoiAdaptor],
+    });
+    app.use(koaBodyParser()).use(router.routes());
+
+    router.add([
+      {
+        method: "get",
+        path: "/query",
+        validate: {
+          query: Joi.object({
+            numbertest: Joi.number().required(),
+            arraytest: Joi.array().items(Joi.number()).required(),
+            numbooltest1: Joi.boolean().required(),
+            numbooltest2: Joi.boolean().truthy("1").falsy("0").required(),
+            numbooltest3: Joi.boolean().truthy("1").falsy("0").required(),
+          }).required(),
+        },
+        handler: async (ctx) => {
+          ctx.body = {
+            query: ctx.request.query,
+          };
+        },
+      },
+    ]);
+
+    const response = await request(app.callback()).get(
+      "/query?numbertest=12345&arraytest=100&arraytest=999&numbooltest1=true&numbooltest2=1&numbooltest3=0"
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toStrictEqual({
+      query: {
+        numbertest: 12345,
+        arraytest: [100, 999],
+        numbooltest1: true,
+        numbooltest2: true,
+        numbooltest3: false,
+      },
+    });
+  });
+
+  it("should be validate ctx.params and cast value inject", async () => {
+    const app = getApp();
+    const router = new Router({
+      adaptors: [JoiAdaptor],
+    });
+    app.use(koaBodyParser()).use(router.routes());
+
+    router.add([
+      {
+        method: "get",
+        path: "/params/:id",
+        validate: {
+          params: Joi.object({
+            id: Joi.number().required(),
+          }).required(),
+        },
+        handler: async (ctx) => {
+          ctx.body = {
+            params: ctx.params,
+          };
+        },
+      },
+    ]);
+
+    const response = await request(app.callback()).get("/params/12345");
+    expect(response.status).toBe(200);
+    expect(response.body).toStrictEqual({
+      params: {
+        id: 12345,
+      },
+    });
+  });
+
+  it("should be validate ctx.request.body and cast value inject", async () => {
+    const app = getApp();
+    const router = new Router({
+      adaptors: [JoiAdaptor],
+    });
+    app.use(koaBodyParser()).use(router.routes());
+
+    router.add([
+      {
+        method: "post",
+        path: "/body",
+        validate: {
+          body: Joi.object({
+            id: Joi.number().required(),
+            collection: Joi.array().items(
+              Joi.object({
+                num: Joi.number().required(),
+              })
+            ),
+          }),
+        },
+        handler: async (ctx) => {
+          ctx.body = {
+            body: ctx.request.body,
+          };
+        },
+      },
+    ]);
+
+    const response = await request(app.callback())
+      .post("/body")
+      .send({
+        id: "12345",
+        collection: [
+          {
+            num: "1",
+          },
+          {
+            num: "2",
+          },
+        ],
+      });
+    expect(response.status).toBe(200);
+    expect(response.body).toStrictEqual({
+      body: {
+        id: 12345,
+        collection: [
+          {
+            num: 1,
+          },
+          {
+            num: 2,
+          },
+        ],
+      },
+    });
+  });
+
+  it("should be validate ctx.body(output) and cast value inject", async () => {
+    const app = getApp();
+    const router = new Router({
+      adaptors: [JoiAdaptor],
+    });
+    app.use(koaBodyParser()).use(router.routes());
+
+    router.add([
+      {
+        method: "get",
+        path: "/output",
+        validate: {
+          output: {
+            200: Joi.object({
+              id: Joi.number().required(),
+              collection: Joi.array().items(
+                Joi.object({
+                  num: Joi.number().required(),
+                })
+              ),
+            }).options({ stripUnknown: true }),
+          },
+        },
+        handler: async (ctx) => {
+          ctx.body = {
+            id: "12345",
+            collection: [
+              {
+                num: "1",
+              },
+              {
+                num: "2",
+              },
+            ],
+            strip1: "test",
+            strip2: [],
+            strip3: {
+              test: "test",
+            },
+          };
+        },
+      },
+    ]);
+
+    const response = await request(app.callback()).get("/output");
+    expect(response.status).toBe(200);
+    expect(response.body).toStrictEqual({
+      id: 12345,
+      collection: [
+        {
+          num: 1,
+        },
+        {
+          num: 2,
+        },
+      ],
+    });
+  });
+
   it("Generate OpenAPI Spec from routes", async () => {
     const router = new Router({
       adaptors: [JoiAdaptor],
