@@ -16,6 +16,11 @@ You can install koa-x-router using npm:
 npm install koa @koa/router koa-x-router joi
 ```
 
+### with TypeScript
+```shell
+npm install @types/koa @types/koa__router -D
+```
+
 ## Usage
 
 [Demo](https://stackblitz.com/edit/koa-x-router-demo?file=index.ts)
