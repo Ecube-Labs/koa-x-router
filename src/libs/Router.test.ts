@@ -314,7 +314,7 @@ describe("koa-x-router API work with Joi", () => {
         },
         handler: async (ctx) => {
           ctx.body = {
-            params: ctx.params,
+            params: ctx.request.params,
           };
         },
       },

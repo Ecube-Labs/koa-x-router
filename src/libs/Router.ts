@@ -1,9 +1,10 @@
 import KoaRouter from "@koa/router";
-import {
+import { OpenApiBuilder } from "openapi3-ts/oas31";
+import type { Context, Next } from "koa";
+import type {
   ComponentsObject,
   ExternalDocumentationObject,
   InfoObject,
-  OpenApiBuilder,
   ParameterObject,
   PathItemObject,
   PathsObject,
@@ -26,6 +27,15 @@ declare module "@koa/router" {
       swagger?: SchemaMetadata; // === document
       document?: SchemaMetadata; // === swagger
     };
+  }
+}
+
+declare module "koa" {
+  interface Request {
+    /**
+     * `ctx.request.params` === `ctx.params`
+     */
+    params: Record<string, any>;
   }
 }
 
@@ -101,6 +111,7 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
       layer.meta = meta;
 
       this.registerValidator(layer, validate);
+      layer.stack.unshift(this.prepareRequest);
     });
   }
 
@@ -258,6 +269,11 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
     );
   }
 
+  private async prepareRequest(ctx: Context, next: Next) {
+    ctx.request.params = ctx.params;
+    await next();
+  }
+
   private registerValidator(
     layer: KoaRouter.Layer,
     validate?: XRouterValidateProperties
@@ -343,11 +359,7 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
             Object.keys(values).length &&
             ctx.request[reqPropName]
           ) {
-            if (reqPropName === "params") {
-              Object.assign(ctx.params, values);
-            } else {
-              Object.assign(ctx.request[reqPropName], values);
-            }
+            Object.assign(ctx.request[reqPropName], values);
           }
         };
 
