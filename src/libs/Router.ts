@@ -1,4 +1,4 @@
-import KoaRouter from "@koa/router";
+import * as KoaRouter from "@koa/router";
 import { OpenApiBuilder } from "openapi3-ts/oas31";
 import type { Context, Next } from "koa";
 import type {
@@ -468,3 +468,7 @@ export interface XRouterAdaptor {
    */
   schemaToOpenApiSchema(schemaLike: SchemaLike): SchemaObject;
 }
+
+export default {
+  Router,
+};
