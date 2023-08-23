@@ -3,9 +3,12 @@
   "exclude": ["node_modules", "**/*.test.ts", "test"],
   "extends": "@ecubelabs/tsconfig/node18.json",
   "compilerOptions": {
-    "esModuleInterop": true,
+    "target": "ES6",
+    "module": "ES2022",
+    "strict": true,
     "declaration": true,
     "declarationMap": true,
-    "outDir": "dist"
+    "removeComments": false,
+    "outDir": "dist/esm"
   }
 }

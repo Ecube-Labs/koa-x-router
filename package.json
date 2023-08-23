@@ -2,10 +2,12 @@
   "name": "koa-x-router",
   "version": "0.0.9",
   "description": "`koa-x-router` is a library that extends the functionality of `koa-router` by providing validation and automatic API documentation features. It simplifies the process of defining routes, validating request data, and generating API documentation.",
-  "main": "dist/index.js",
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "scripts": {
     "test": "jest",
-    "build": "tsc",
+    "build": "rm -rf ./dist && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json",
     "prepublish": "npm run build",
     "prepublishOnly": "npm run build"
   },
@@ -14,6 +16,18 @@
     "package.json",
     "README.md"
   ],
+  "exports": {
+    ".": {
+      "import": {
+        "default": "./dist/esm/index.js",
+        "types": "./dist/esm/index.d.ts"
+      },
+      "require": {
+        "default": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts"
+      }
+    }
+  },
   "keywords": [
     "koa",
     "router",
