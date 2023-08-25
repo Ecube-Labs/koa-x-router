@@ -321,9 +321,7 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<
     );
 
     if (!adaptor) {
-      throw new Error(
-        `Not found compatible adaptor for schema: ${JSON.stringify(schema)}`
-      );
+      throw new Error(`Not found compatible adaptor for schema: ${schema}`);
     }
 
     return adaptor;
