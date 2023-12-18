@@ -1,4 +1,4 @@
-import * as KoaRouter from "@koa/router";
+import KoaRouter from "@koa/router";
 import { OpenApiBuilder } from "openapi3-ts/oas31";
 import type { Context, Next } from "koa";
 import type {
