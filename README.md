@@ -1,5 +1,8 @@
 # koa-x-router
 
+<span class="badge-npmversion"><a href="https://npmjs.org/package/koa-x-router" title="View this project on NPM"><img src="https://img.shields.io/npm/v/koa-x-router.svg" alt="NPM version" /></a></span>
+<span class="badge-npmdownloads"><a href="https://npmjs.org/package/koa-x-router" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/koa-x-router.svg" alt="NPM downloads" /></a></span>
+
 `koa-x-router` is a library that extends the functionality of `@koa/router` by providing validation and automatic API documentation features. It simplifies the process of defining routes, validating request data, and generating API documentation.
 
 ## Features
