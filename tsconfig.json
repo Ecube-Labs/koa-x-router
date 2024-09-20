@@ -10,6 +10,7 @@
     "declarationMap": true,
     "removeComments": false,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "outDir": "dist/esm"
   }
 }
