@@ -16,7 +16,7 @@ describe('koa-x-router API work with Zod', () => {
             method: 'get',
             path: '/',
             validate: {
-                query: z.object({ name: z.string().optional() }).optional(),
+                query: z.object({ name: z.string() }),
             },
             handler: async (ctx) => {
                 ctx.body = `Hello World, ${ctx.query.name}`;
@@ -26,13 +26,7 @@ describe('koa-x-router API work with Zod', () => {
         const [layer] = router.stack;
 
         expect(layer.path).toBe('/');
-        expect(JSON.stringify(layer.opts.validate?.query)).toEqual(
-            JSON.stringify(
-                z.object({
-                    name: z.string(),
-                }),
-            ),
-        );
+        expect(JSON.stringify(layer.opts.validate?.query)).toBe(JSON.stringify(z.object({ name: z.string() })));
 
         const response = await request(app.callback()).get('/?name=tim');
         expect(response.status).toBe(200);
@@ -68,7 +62,7 @@ describe('koa-x-router API work with Zod', () => {
                 method: 'get',
                 path: '/query',
                 validate: {
-                    query: z.object({ name: z.string() }).optional(),
+                    query: z.object({ name: z.string() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = `Hello World, ${ctx.query.name}`;
@@ -78,7 +72,7 @@ describe('koa-x-router API work with Zod', () => {
                 method: 'post',
                 path: '/body',
                 validate: {
-                    body: z.object({ age: z.number().optional() }).optional(),
+                    body: z.object({ age: z.number().optional() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = `Hello World`;
@@ -88,7 +82,7 @@ describe('koa-x-router API work with Zod', () => {
                 method: 'get',
                 path: '/header',
                 validate: {
-                    header: z.object({ authorization: z.string() }).optional(),
+                    header: z.object({ authorization: z.string() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = `Hello World`;
@@ -98,7 +92,7 @@ describe('koa-x-router API work with Zod', () => {
                 method: 'get',
                 path: '/params/:id',
                 validate: {
-                    params: z.object({ id: z.enum(['tim', 'charlie']) }).optional(),
+                    params: z.object({ id: z.enum(['tim', 'charlie']) }),
                 },
                 handler: async (ctx) => {
                     ctx.body = `Hello World`;
@@ -110,7 +104,7 @@ describe('koa-x-router API work with Zod', () => {
                 validate: {
                     output: {
                         200: {
-                            body: z.object({ id: z.enum(['tim', 'charlie']) }).optional(),
+                            body: z.object({ id: z.enum(['tim', 'charlie']) }),
                         },
                     },
                 },
@@ -126,7 +120,7 @@ describe('koa-x-router API work with Zod', () => {
                 validate: {
                     output: {
                         200: {
-                            body: z.object({ id: z.enum(['tim', 'charlie']) }).optional(),
+                            body: z.object({ id: z.enum(['tim', 'charlie']) }),
                         },
                         201: {
                             body: z.enum(['created~~']),
@@ -142,29 +136,77 @@ describe('koa-x-router API work with Zod', () => {
 
         const response1 = await request(app.callback()).get('/query');
         expect(response1.status).toBe(400);
-        expect(response1.text).toBe('"name" is required');
+        expect(JSON.parse(response1.text)).toEqual([
+            {
+                code: 'invalid_type',
+                expected: 'string',
+                received: 'undefined',
+                path: ['name'],
+                message: 'Required',
+            },
+        ]);
 
         const response2 = await request(app.callback()).post('/body').send({
             age: 'dasdas',
         });
         expect(response2.status).toBe(400);
-        expect(response2.text).toBe('"age" must be a number');
+        expect(JSON.parse(response2.text)).toEqual([
+            {
+                code: 'invalid_type',
+                expected: 'number',
+                received: 'string',
+                path: ['age'],
+                message: 'Expected number, received string',
+            },
+        ]);
 
         const response3 = await request(app.callback()).get('/header');
         expect(response3.status).toBe(400);
-        expect(response3.text).toBe('"authorization" is required');
+        expect(JSON.parse(response3.text)).toEqual([
+            {
+                code: 'invalid_type',
+                expected: 'string',
+                received: 'undefined',
+                path: ['authorization'],
+                message: 'Required',
+            },
+        ]);
 
         const response4 = await request(app.callback()).get('/params/ben');
         expect(response4.status).toBe(400);
-        expect(response4.text).toBe('"id" must be one of [tim, charlie]');
+        expect(JSON.parse(response4.text)).toEqual([
+            {
+                received: 'ben',
+                code: 'invalid_enum_value',
+                options: ['tim', 'charlie'],
+                path: ['id'],
+                message: "Invalid enum value. Expected 'tim' | 'charlie', received 'ben'",
+            },
+        ]);
 
         const response5 = await request(app.callback()).get('/output1');
         expect(response5.status).toBe(400);
-        expect(response5.text).toBe('"id" must be one of [tim, charlie]');
+        expect(JSON.parse(response5.text)).toEqual([
+            {
+                code: 'invalid_enum_value',
+                message: "Invalid enum value. Expected 'tim' | 'charlie', received 'ben'",
+                options: ['tim', 'charlie'],
+                path: ['id'],
+                received: 'ben',
+            },
+        ]);
 
         const response6 = await request(app.callback()).get('/output2');
         expect(response6.status).toBe(400);
-        expect(response6.text).toBe('"value" must be [created~~]');
+        expect(JSON.parse(response6.text)).toEqual([
+            {
+                code: 'invalid_enum_value',
+                message: "Invalid enum value. Expected 'created~~', received 'created^^'",
+                options: ['created~~'],
+                path: [],
+                received: 'created^^',
+            },
+        ]);
     });
 
     it('should be validate ctx.request.header and cast value inject', async () => {
@@ -179,7 +221,7 @@ describe('koa-x-router API work with Zod', () => {
                 method: 'get',
                 path: '/header',
                 validate: {
-                    header: z.object({ numbertest: z.number() }).optional(),
+                    header: z.object({ numbertest: z.coerce.number() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = {
@@ -214,11 +256,11 @@ describe('koa-x-router API work with Zod', () => {
                 validate: {
                     query: z
                         .object({
-                            numbertest: z.number(),
-                            arraytest: z.array(z.number()),
-                            numbooltest1: z.boolean(),
-                            numbooltest2: z.coerce.boolean(),
-                            numbooltest3: z.coerce.boolean(),
+                            numbertest: z.coerce.number(),
+                            arraytest: z.array(z.coerce.number()),
+                            numbooltest1: z.coerce.boolean(),
+                            numbooltest2: z.coerce.number().pipe(z.coerce.boolean()),
+                            numbooltest3: z.coerce.number().pipe(z.coerce.boolean()),
                         })
                         .required(),
                 },
@@ -257,7 +299,7 @@ describe('koa-x-router API work with Zod', () => {
                 method: 'get',
                 path: '/params/:id',
                 validate: {
-                    params: z.object({ id: z.number() }),
+                    params: z.object({ id: z.coerce.number() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = {
@@ -288,12 +330,10 @@ describe('koa-x-router API work with Zod', () => {
                 method: 'post',
                 path: '/body',
                 validate: {
-                    body: z
-                        .object({
-                            id: z.number(),
-                            collection: z.array(z.object({ num: z.number() }).optional()),
-                        })
-                        .optional(),
+                    body: z.object({
+                        id: z.coerce.number(),
+                        collection: z.array(z.object({ num: z.coerce.number() })),
+                    }),
                 },
                 handler: async (ctx) => {
                     ctx.body = {
@@ -333,8 +373,8 @@ describe('koa-x-router API work with Zod', () => {
                     output: {
                         200: {
                             body: z.object({
-                                id: z.number(),
-                                collection: z.array(z.object({ num: z.number() }).optional()),
+                                id: z.coerce.number(),
+                                collection: z.array(z.object({ num: z.coerce.number() })),
                             }),
                         },
                     },
@@ -375,9 +415,7 @@ describe('koa-x-router API work with Zod', () => {
                     },
                 },
                 validate: {
-                    query: z.object({
-                        name: z.string(),
-                    }),
+                    query: z.object({ name: z.string() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = `Hello World, ${ctx.query.name}`;
@@ -392,7 +430,7 @@ describe('koa-x-router API work with Zod', () => {
                     },
                 },
                 validate: {
-                    body: z.object({ name: z.string().optional() }).optional(),
+                    body: z.object({ name: z.string().optional() }),
                 },
                 handler: async (ctx) => {
                     ctx.status = 201;
@@ -410,7 +448,7 @@ describe('koa-x-router API work with Zod', () => {
                 validate: {
                     output: {
                         200: {
-                            body: z.array(z.object({ name: z.string(), age: z.number() }).optional()),
+                            body: z.array(z.object({ name: z.string(), age: z.number() })),
                         },
                     },
                 },
@@ -429,10 +467,10 @@ describe('koa-x-router API work with Zod', () => {
                 validate: {
                     output: {
                         200: {
-                            body: z.object({ name: z.string(), age: z.number() }).optional(),
+                            body: z.object({ name: z.string(), age: z.number() }),
                         },
                         404: {
-                            body: z.object({ message: z.string() }).optional().describe('User not found'),
+                            body: z.object({ message: z.string() }).describe('User not found'),
                         },
                     },
                 },
@@ -479,7 +517,6 @@ describe('koa-x-router API work with Zod', () => {
                                     schema: {
                                         type: 'object',
                                         properties: { name: { type: 'string' } },
-                                        additionalProperties: false,
                                     },
                                 },
                             },
@@ -498,10 +535,9 @@ describe('koa-x-router API work with Zod', () => {
                                                 type: 'object',
                                                 properties: {
                                                     name: { type: 'string' },
-                                                    age: { type: 'number', format: 'float' },
+                                                    age: { type: 'number' },
                                                 },
                                                 required: ['name', 'age'],
-                                                additionalProperties: false,
                                             },
                                         },
                                     },
@@ -522,10 +558,9 @@ describe('koa-x-router API work with Zod', () => {
                                             type: 'object',
                                             properties: {
                                                 name: { type: 'string' },
-                                                age: { type: 'number', format: 'float' },
+                                                age: { type: 'number' },
                                             },
                                             required: ['name', 'age'],
-                                            additionalProperties: false,
                                         },
                                     },
                                 },
@@ -538,7 +573,6 @@ describe('koa-x-router API work with Zod', () => {
                                             type: 'object',
                                             properties: { message: { type: 'string' } },
                                             required: ['message'],
-                                            additionalProperties: false,
                                             description: 'User not found',
                                         },
                                     },
@@ -572,9 +606,7 @@ describe('koa-x-router API work with Zod', () => {
                 },
             },
             validate: {
-                query: z.object({
-                    name: z.string(),
-                }),
+                query: z.object({ name: z.string().optional() }),
             },
             handler: async (ctx) => {
                 ctx.body = `Hello World, ${ctx.query.name}`;
@@ -591,9 +623,7 @@ describe('koa-x-router API work with Zod', () => {
                     },
                 },
                 validate: {
-                    body: z.object({
-                        name: z.string(),
-                    }),
+                    body: z.object({ name: z.string().optional() }),
                 },
                 handler: async (ctx) => {
                     ctx.status = 201;
@@ -611,7 +641,7 @@ describe('koa-x-router API work with Zod', () => {
                 validate: {
                     output: {
                         200: {
-                            body: z.array(z.object({ name: z.string(), age: z.number() }).optional()),
+                            body: z.array(z.object({ name: z.string(), age: z.number() })),
                         },
                     },
                 },
@@ -630,13 +660,13 @@ describe('koa-x-router API work with Zod', () => {
                     },
                 },
                 validate: {
-                    params: z.object({ id: z.number().positive().int() }).optional(),
+                    params: z.object({ id: z.number().positive().int() }),
                     output: {
                         200: {
-                            body: z.object({ name: z.string(), age: z.number() }).optional(),
+                            body: z.object({ name: z.string(), age: z.number() }),
                         },
                         404: {
-                            body: z.object({ message: z.string() }).optional().describe('User not found'),
+                            body: z.object({ message: z.string() }).describe('User not found'),
                         },
                     },
                 },
@@ -686,7 +716,6 @@ describe('koa-x-router API work with Zod', () => {
                                     schema: {
                                         type: 'object',
                                         properties: { name: { type: 'string' } },
-                                        additionalProperties: false,
                                     },
                                 },
                             },
@@ -705,10 +734,9 @@ describe('koa-x-router API work with Zod', () => {
                                                 type: 'object',
                                                 properties: {
                                                     name: { type: 'string' },
-                                                    age: { type: 'number', format: 'float' },
+                                                    age: { type: 'number' },
                                                 },
                                                 required: ['name', 'age'],
-                                                additionalProperties: false,
                                             },
                                         },
                                     },
@@ -725,8 +753,8 @@ describe('koa-x-router API work with Zod', () => {
                                 in: 'path',
                                 name: 'id',
                                 schema: {
-                                    minimum: 1,
-                                    type: 'int',
+                                    exclusiveMinimum: 0,
+                                    type: 'integer',
                                 },
                             },
                         ],
@@ -739,10 +767,9 @@ describe('koa-x-router API work with Zod', () => {
                                             type: 'object',
                                             properties: {
                                                 name: { type: 'string' },
-                                                age: { type: 'number', format: 'float' },
+                                                age: { type: 'number' },
                                             },
                                             required: ['name', 'age'],
-                                            additionalProperties: false,
                                         },
                                     },
                                 },
@@ -755,7 +782,6 @@ describe('koa-x-router API work with Zod', () => {
                                             type: 'object',
                                             properties: { message: { type: 'string' } },
                                             required: ['message'],
-                                            additionalProperties: false,
                                             description: 'User not found',
                                         },
                                     },
@@ -810,9 +836,7 @@ describe('koa-x-router API work with Zod', () => {
                     },
                 },
                 validate: {
-                    body: z.object({
-                        name: z.string(),
-                    }),
+                    body: z.object({ name: z.string().optional() }),
                 },
                 handler: async (ctx) => {
                     ctx.status = 201;
@@ -849,14 +873,10 @@ describe('koa-x-router API work with Zod', () => {
                     },
                 },
                 validate: {
-                    params: z
-                        .object({
-                            id: z.number().positive().int(),
-                        })
-                        .optional(),
+                    params: z.object({ id: z.number().positive().int() }),
                     output: {
                         200: {
-                            body: z.object({ name: z.string(), age: z.number() }).optional(),
+                            body: z.object({ name: z.string(), age: z.number() }),
                         },
                         404: {
                             body: z.object({ message: z.string() }).optional().describe('User not found'),
@@ -909,7 +929,6 @@ describe('koa-x-router API work with Zod', () => {
                                     schema: {
                                         type: 'object',
                                         properties: { name: { type: 'string' } },
-                                        additionalProperties: false,
                                     },
                                 },
                             },
@@ -928,10 +947,9 @@ describe('koa-x-router API work with Zod', () => {
                                                 type: 'object',
                                                 properties: {
                                                     name: { type: 'string' },
-                                                    age: { type: 'number', format: 'float' },
+                                                    age: { type: 'number' },
                                                 },
                                                 required: ['name', 'age'],
-                                                additionalProperties: false,
                                             },
                                         },
                                     },
@@ -948,8 +966,8 @@ describe('koa-x-router API work with Zod', () => {
                                 in: 'path',
                                 name: 'id',
                                 schema: {
-                                    minimum: 1,
-                                    type: 'int',
+                                    exclusiveMinimum: 0,
+                                    type: 'integer',
                                 },
                             },
                         ],
@@ -962,10 +980,9 @@ describe('koa-x-router API work with Zod', () => {
                                             type: 'object',
                                             properties: {
                                                 name: { type: 'string' },
-                                                age: { type: 'number', format: 'float' },
+                                                age: { type: 'number' },
                                             },
                                             required: ['name', 'age'],
-                                            additionalProperties: false,
                                         },
                                     },
                                 },
@@ -978,7 +995,6 @@ describe('koa-x-router API work with Zod', () => {
                                             type: 'object',
                                             properties: { message: { type: 'string' } },
                                             required: ['message'],
-                                            additionalProperties: false,
                                             description: 'User not found',
                                         },
                                     },
