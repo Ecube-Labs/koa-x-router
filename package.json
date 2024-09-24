@@ -46,7 +46,6 @@
   "author": "Ecube Labs Co., Ltd.",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@asteasolutions/zod-to-openapi": "^7.1.1",
     "@ecubelabs/prettier-config": "^0.0.8",
     "@ecubelabs/tsconfig": "^1.0.0",
     "@types/eslint": "^8",
@@ -76,10 +75,10 @@
     "zod": "^3.23.8"
   },
   "optionalDependencies": {
-    "joi": ">=17.0.0"
+    "joi": ">=17.0.0",
+    "zod": ">=3.0.0"
   },
   "peerDependencies": {
-    "@asteasolutions/zod-to-openapi": ">=7.1.1",
     "@koa/router": ">=8.0.0",
     "joi": ">=17.0.0",
     "koa": "*",
@@ -94,6 +93,7 @@
     }
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^7.1.1",
     "joi-to-swagger": "^6.2.0",
     "openapi3-ts": "^4.1.2"
   }
