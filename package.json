@@ -1,13 +1,13 @@
 {
   "name": "koa-x-router",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "`koa-x-router` is a library that extends the functionality of `koa-router` by providing validation and automatic API documentation features. It simplifies the process of defining routes, validating request data, and generating API documentation.",
   "type": "module",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "scripts": {
     "test": "jest",
-    "build": "rm -rf ./dist && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
+    "build": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
     "prepublish": "npm run build",
     "prepublishOnly": "npm run build"
   },
@@ -55,36 +55,45 @@
     "@types/koa-bodyparser": "^4.3.10",
     "@types/prettier": "^2",
     "@types/supertest": "^2.0.12",
-    "eslint": "^8.42.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-ecubelabs": "^15.3.0-alpha.1",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-import-resolver-typescript": "^3.5.5",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-jest": "^27.2.1",
-    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jest": "^28.7.0",
+    "eslint-plugin-prettier": "^5.2.1",
     "jest": "^29.5.0",
     "koa-bodyparser": "^4.4.0",
-    "prettier": "^2.8.8",
+    "prettier": "^3.3.3",
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "zod": "^3.23.8"
   },
   "optionalDependencies": {
-    "joi": ">=17.0.0"
+    "joi": ">=17.0.0",
+    "zod": ">=3.0.0"
   },
   "peerDependencies": {
     "@koa/router": ">=8.0.0",
     "joi": ">=17.0.0",
-    "koa": "*"
+    "koa": "*",
+    "zod": ">=3.0.0"
   },
   "peerDependenciesMeta": {
     "joi": {
       "optional": true
+    },
+    "zod": {
+      "optional": true
     }
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^7.1.1",
     "joi-to-swagger": "^6.2.0",
     "openapi3-ts": "^4.1.2"
   }

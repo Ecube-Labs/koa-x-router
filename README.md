@@ -7,16 +7,22 @@
 
 ## Features
 
-- **Validation**: With `koa-x-router`, you can perform validation using various validation libraries. The library provides adapters such as `JoiAdaptor` and `YupAdaptor` that allow you to define validation schemas using popular validation libraries like `Joi` or `Yup`. You can also implement your own custom adapter by implementing the `XRouterAdaptor` interface.
+- **Validation**: With `koa-x-router`, you can perform validation using various validation libraries. The library provides adapters such as `JoiAdaptor` and `ZodAdaptor` that allow you to define validation schemas using popular validation libraries like `Joi` or `Zod`. You can also implement your own custom adapter by implementing the `XRouterAdaptor` interface.
 
 - **Automatic API Documentation**: `koa-x-router` automatically generates API documentation based on your route definitions. It extracts information about route paths, request methods, request/response data structures, and validation rules. The generated documentation can be accessed through an endpoint, making it convenient for developers to understand and consume your API.
 
 ## Installation
 
-You can install koa-x-router using npm:
+You can install koa-x-router with joi using npm:
 
 ```shell
 npm install koa @koa/router koa-x-router joi
+```
+
+or install with zod using npm:
+
+```shell
+npm install koa @koa/router koa-x-router zod
 ```
 
 ### with TypeScript
@@ -34,11 +40,14 @@ To use `koa-x-router`, import it and initialize it with an instance of `@koa/rou
 ```ts
 import Koa from "koa";
 import bodyParser from "koa-bodyparser";
-import { Router, JoiAdaptor } from "koa-x-router";
+import Joi from "joi"
+import { Router, JoiAdaptor, ZodAdaptor } from "koa-x-router";
 
 const app = new Koa();
 const router = new Router({
   adaptors: [JoiAdaptor], // <== Important!
+  // adaptors: [ZodAdaptor], // If you want to use with Zod
+  // adaptors: [JoiAdaptor, ZodAdaptor], // or both
 });
 const docRouter = new Router();
 

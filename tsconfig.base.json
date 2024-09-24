@@ -1,0 +1,14 @@
+{
+  "include": ["src"],
+  "exclude": ["node_modules", "**/*.test.ts", "test"],
+  "extends": "@ecubelabs/tsconfig/node18.json",
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ES2022",
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "removeComments": false,
+    "allowSyntheticDefaultImports": true,
+  }
+}

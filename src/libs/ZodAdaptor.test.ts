@@ -1,53 +1,14 @@
-import Joi from 'joi';
+import { z } from 'zod';
 import request from 'supertest';
 import koaBodyParser from 'koa-bodyparser';
 import { getApp } from '../../test/app';
-import { JoiAdaptor, Router } from './';
+import { ZodAdaptor, Router } from '.';
 
-describe('koa-router API', () => {
-    it('should be defined', () => {
-        expect(Router).toBeDefined();
-    });
-
-    it('should be able to create instance', () => {
-        const router = new Router();
-        expect(router).toBeDefined();
-    });
-
-    it('should be work with koa app', async () => {
-        const app = getApp();
-        const router = new Router();
-        app.use(router.routes());
-
-        router.get('/', async (ctx) => {
-            ctx.body = 'Hello World';
-        });
-
-        const response = await request(app.callback()).get('/');
-        expect(response.status).toBe(200);
-        expect(response.text).toBe('Hello World');
-    });
-
-    it('should be work with koa app to create instance with options', async () => {
-        const app = getApp();
-        const router = new Router({ prefix: '/api' });
-        app.use(router.routes());
-
-        router.get('/path', async (ctx) => {
-            ctx.body = 'Hello World';
-        });
-
-        const response = await request(app.callback()).get('/api/path');
-        expect(response.status).toBe(200);
-        expect(response.text).toBe('Hello World');
-    });
-});
-
-describe('koa-x-router API work with Joi', () => {
+describe('koa-x-router API work with Zod', () => {
     it('should be define validate schema', async () => {
         const app = getApp();
         const router = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         app.use(router.routes());
 
@@ -55,9 +16,7 @@ describe('koa-x-router API work with Joi', () => {
             method: 'get',
             path: '/',
             validate: {
-                query: Joi.object({
-                    name: Joi.string(),
-                }),
+                query: z.object({ name: z.string() }),
             },
             handler: async (ctx) => {
                 ctx.body = `Hello World, ${ctx.query.name}`;
@@ -67,13 +26,7 @@ describe('koa-x-router API work with Joi', () => {
         const [layer] = router.stack;
 
         expect(layer.path).toBe('/');
-        expect(JSON.stringify(layer.opts.validate?.query)).toEqual(
-            JSON.stringify(
-                Joi.object({
-                    name: Joi.string(),
-                }),
-            ),
-        );
+        expect(JSON.stringify(layer.opts.validate?.query)).toBe(JSON.stringify(z.object({ name: z.string() })));
 
         const response = await request(app.callback()).get('/?name=tim');
         expect(response.status).toBe(200);
@@ -88,9 +41,7 @@ describe('koa-x-router API work with Joi', () => {
                 method: 'get',
                 path: '/',
                 validate: {
-                    query: Joi.object({
-                        name: 'string',
-                    }),
+                    query: z.object({ name: z.string() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = 'Hello World';
@@ -102,7 +53,7 @@ describe('koa-x-router API work with Joi', () => {
     it('throw error when invalid data of schema', async () => {
         const app = getApp();
         const router = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         app.use(koaBodyParser()).use(router.routes());
 
@@ -111,9 +62,7 @@ describe('koa-x-router API work with Joi', () => {
                 method: 'get',
                 path: '/query',
                 validate: {
-                    query: Joi.object({
-                        name: Joi.string().required(),
-                    }),
+                    query: z.object({ name: z.string() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = `Hello World, ${ctx.query.name}`;
@@ -123,9 +72,7 @@ describe('koa-x-router API work with Joi', () => {
                 method: 'post',
                 path: '/body',
                 validate: {
-                    body: Joi.object({
-                        age: Joi.number(),
-                    }),
+                    body: z.object({ age: z.number().optional() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = `Hello World`;
@@ -135,9 +82,7 @@ describe('koa-x-router API work with Joi', () => {
                 method: 'get',
                 path: '/header',
                 validate: {
-                    header: Joi.object({
-                        authorization: Joi.string().required(),
-                    }),
+                    header: z.object({ authorization: z.string() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = `Hello World`;
@@ -147,9 +92,7 @@ describe('koa-x-router API work with Joi', () => {
                 method: 'get',
                 path: '/params/:id',
                 validate: {
-                    params: Joi.object({
-                        id: Joi.valid('tim', 'charlie').required(),
-                    }),
+                    params: z.object({ id: z.enum(['tim', 'charlie']) }),
                 },
                 handler: async (ctx) => {
                     ctx.body = `Hello World`;
@@ -161,9 +104,7 @@ describe('koa-x-router API work with Joi', () => {
                 validate: {
                     output: {
                         200: {
-                            body: Joi.object({
-                                id: Joi.valid('tim', 'charlie').required(),
-                            }),
+                            body: z.object({ id: z.enum(['tim', 'charlie']) }),
                         },
                     },
                 },
@@ -179,12 +120,10 @@ describe('koa-x-router API work with Joi', () => {
                 validate: {
                     output: {
                         200: {
-                            body: Joi.object({
-                                id: Joi.valid('tim', 'charlie').required(),
-                            }),
+                            body: z.object({ id: z.enum(['tim', 'charlie']) }),
                         },
                         201: {
-                            body: Joi.string().valid('created~~').required(),
+                            body: z.enum(['created~~']),
                         },
                     },
                 },
@@ -197,35 +136,83 @@ describe('koa-x-router API work with Joi', () => {
 
         const response1 = await request(app.callback()).get('/query');
         expect(response1.status).toBe(400);
-        expect(response1.text).toBe('"name" is required');
+        expect(JSON.parse(response1.text)).toEqual([
+            {
+                code: 'invalid_type',
+                expected: 'string',
+                received: 'undefined',
+                path: ['name'],
+                message: 'Required',
+            },
+        ]);
 
         const response2 = await request(app.callback()).post('/body').send({
             age: 'dasdas',
         });
         expect(response2.status).toBe(400);
-        expect(response2.text).toBe('"age" must be a number');
+        expect(JSON.parse(response2.text)).toEqual([
+            {
+                code: 'invalid_type',
+                expected: 'number',
+                received: 'string',
+                path: ['age'],
+                message: 'Expected number, received string',
+            },
+        ]);
 
         const response3 = await request(app.callback()).get('/header');
         expect(response3.status).toBe(400);
-        expect(response3.text).toBe('"authorization" is required');
+        expect(JSON.parse(response3.text)).toEqual([
+            {
+                code: 'invalid_type',
+                expected: 'string',
+                received: 'undefined',
+                path: ['authorization'],
+                message: 'Required',
+            },
+        ]);
 
         const response4 = await request(app.callback()).get('/params/ben');
         expect(response4.status).toBe(400);
-        expect(response4.text).toBe('"id" must be one of [tim, charlie]');
+        expect(JSON.parse(response4.text)).toEqual([
+            {
+                received: 'ben',
+                code: 'invalid_enum_value',
+                options: ['tim', 'charlie'],
+                path: ['id'],
+                message: "Invalid enum value. Expected 'tim' | 'charlie', received 'ben'",
+            },
+        ]);
 
         const response5 = await request(app.callback()).get('/output1');
         expect(response5.status).toBe(400);
-        expect(response5.text).toBe('"id" must be one of [tim, charlie]');
+        expect(JSON.parse(response5.text)).toEqual([
+            {
+                code: 'invalid_enum_value',
+                message: "Invalid enum value. Expected 'tim' | 'charlie', received 'ben'",
+                options: ['tim', 'charlie'],
+                path: ['id'],
+                received: 'ben',
+            },
+        ]);
 
         const response6 = await request(app.callback()).get('/output2');
         expect(response6.status).toBe(400);
-        expect(response6.text).toBe('"value" must be [created~~]');
+        expect(JSON.parse(response6.text)).toEqual([
+            {
+                code: 'invalid_enum_value',
+                message: "Invalid enum value. Expected 'created~~', received 'created^^'",
+                options: ['created~~'],
+                path: [],
+                received: 'created^^',
+            },
+        ]);
     });
 
     it('should be validate ctx.request.header and cast value inject', async () => {
         const app = getApp();
         const router = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         app.use(koaBodyParser()).use(router.routes());
 
@@ -234,11 +221,7 @@ describe('koa-x-router API work with Joi', () => {
                 method: 'get',
                 path: '/header',
                 validate: {
-                    header: Joi.object({
-                        numbertest: Joi.number().required(),
-                    }).options({
-                        allowUnknown: true,
-                    }),
+                    header: z.object({ numbertest: z.coerce.number() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = {
@@ -262,7 +245,7 @@ describe('koa-x-router API work with Joi', () => {
     it('should be validate ctx.request.query and cast value inject', async () => {
         const app = getApp();
         const router = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         app.use(koaBodyParser()).use(router.routes());
 
@@ -271,13 +254,15 @@ describe('koa-x-router API work with Joi', () => {
                 method: 'get',
                 path: '/query',
                 validate: {
-                    query: Joi.object({
-                        numbertest: Joi.number().required(),
-                        arraytest: Joi.array().items(Joi.number()).required(),
-                        numbooltest1: Joi.boolean().required(),
-                        numbooltest2: Joi.boolean().truthy('1').falsy('0').required(),
-                        numbooltest3: Joi.boolean().truthy('1').falsy('0').required(),
-                    }).required(),
+                    query: z
+                        .object({
+                            numbertest: z.coerce.number(),
+                            arraytest: z.array(z.coerce.number()),
+                            numbooltest1: z.coerce.boolean(),
+                            numbooltest2: z.coerce.number().pipe(z.coerce.boolean()),
+                            numbooltest3: z.coerce.number().pipe(z.coerce.boolean()),
+                        })
+                        .required(),
                 },
                 handler: async (ctx) => {
                     ctx.body = {
@@ -305,7 +290,7 @@ describe('koa-x-router API work with Joi', () => {
     it('should be validate ctx.request.params and cast value inject', async () => {
         const app = getApp();
         const router = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         app.use(koaBodyParser()).use(router.routes());
 
@@ -314,9 +299,7 @@ describe('koa-x-router API work with Joi', () => {
                 method: 'get',
                 path: '/params/:id',
                 validate: {
-                    params: Joi.object({
-                        id: Joi.number().required(),
-                    }).required(),
+                    params: z.object({ id: z.coerce.number() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = {
@@ -338,7 +321,7 @@ describe('koa-x-router API work with Joi', () => {
     it('should be validate ctx.request.body and cast value inject', async () => {
         const app = getApp();
         const router = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         app.use(koaBodyParser()).use(router.routes());
 
@@ -347,13 +330,9 @@ describe('koa-x-router API work with Joi', () => {
                 method: 'post',
                 path: '/body',
                 validate: {
-                    body: Joi.object({
-                        id: Joi.number().required(),
-                        collection: Joi.array().items(
-                            Joi.object({
-                                num: Joi.number().required(),
-                            }),
-                        ),
+                    body: z.object({
+                        id: z.coerce.number(),
+                        collection: z.array(z.object({ num: z.coerce.number() })),
                     }),
                 },
                 handler: async (ctx) => {
@@ -368,27 +347,13 @@ describe('koa-x-router API work with Joi', () => {
             .post('/body')
             .send({
                 id: '12345',
-                collection: [
-                    {
-                        num: '1',
-                    },
-                    {
-                        num: '2',
-                    },
-                ],
+                collection: [{ num: '1' }, { num: '2' }],
             });
         expect(response.status).toBe(200);
         expect(response.body).toStrictEqual({
             body: {
                 id: 12345,
-                collection: [
-                    {
-                        num: 1,
-                    },
-                    {
-                        num: 2,
-                    },
-                ],
+                collection: [{ num: 1 }, { num: 2 }],
             },
         });
     });
@@ -396,7 +361,7 @@ describe('koa-x-router API work with Joi', () => {
     it('should be validate ctx.body(output) and cast value inject', async () => {
         const app = getApp();
         const router = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         app.use(koaBodyParser()).use(router.routes());
 
@@ -407,33 +372,20 @@ describe('koa-x-router API work with Joi', () => {
                 validate: {
                     output: {
                         200: {
-                            body: Joi.object({
-                                id: Joi.number().required(),
-                                collection: Joi.array().items(
-                                    Joi.object({
-                                        num: Joi.number().required(),
-                                    }),
-                                ),
-                            }).options({ stripUnknown: true }),
+                            body: z.object({
+                                id: z.coerce.number(),
+                                collection: z.array(z.object({ num: z.coerce.number() })),
+                            }),
                         },
                     },
                 },
                 handler: async (ctx) => {
                     ctx.body = {
                         id: '12345',
-                        collection: [
-                            {
-                                num: '1',
-                            },
-                            {
-                                num: '2',
-                            },
-                        ],
+                        collection: [{ num: '1' }, { num: '2' }],
                         strip1: 'test',
                         strip2: [],
-                        strip3: {
-                            test: 'test',
-                        },
+                        strip3: { test: 'test' },
                     };
                 },
             },
@@ -443,20 +395,13 @@ describe('koa-x-router API work with Joi', () => {
         expect(response.status).toBe(200);
         expect(response.body).toStrictEqual({
             id: 12345,
-            collection: [
-                {
-                    num: 1,
-                },
-                {
-                    num: 2,
-                },
-            ],
+            collection: [{ num: 1 }, { num: 2 }],
         });
     });
 
     it('Generate OpenAPI Spec from routes', async () => {
         const router = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
 
         router.add([
@@ -470,9 +415,7 @@ describe('koa-x-router API work with Joi', () => {
                     },
                 },
                 validate: {
-                    query: Joi.object({
-                        name: Joi.string(),
-                    }),
+                    query: z.object({ name: z.string() }),
                 },
                 handler: async (ctx) => {
                     ctx.body = `Hello World, ${ctx.query.name}`;
@@ -487,9 +430,7 @@ describe('koa-x-router API work with Joi', () => {
                     },
                 },
                 validate: {
-                    body: Joi.object({
-                        name: Joi.string(),
-                    }),
+                    body: z.object({ name: z.string().optional() }),
                 },
                 handler: async (ctx) => {
                     ctx.status = 201;
@@ -507,12 +448,7 @@ describe('koa-x-router API work with Joi', () => {
                 validate: {
                     output: {
                         200: {
-                            body: Joi.array().items(
-                                Joi.object({
-                                    name: Joi.string().required(),
-                                    age: Joi.number().required(),
-                                }),
-                            ),
+                            body: z.array(z.object({ name: z.string(), age: z.number() })),
                         },
                     },
                 },
@@ -531,15 +467,10 @@ describe('koa-x-router API work with Joi', () => {
                 validate: {
                     output: {
                         200: {
-                            body: Joi.object({
-                                name: Joi.string().required(),
-                                age: Joi.number().required(),
-                            }),
+                            body: z.object({ name: z.string(), age: z.number() }),
                         },
                         404: {
-                            body: Joi.object({
-                                message: Joi.string().required(),
-                            }).description('User not found'),
+                            body: z.object({ message: z.string() }).describe('User not found'),
                         },
                     },
                 },
@@ -586,7 +517,6 @@ describe('koa-x-router API work with Joi', () => {
                                     schema: {
                                         type: 'object',
                                         properties: { name: { type: 'string' } },
-                                        additionalProperties: false,
                                     },
                                 },
                             },
@@ -605,10 +535,9 @@ describe('koa-x-router API work with Joi', () => {
                                                 type: 'object',
                                                 properties: {
                                                     name: { type: 'string' },
-                                                    age: { type: 'number', format: 'float' },
+                                                    age: { type: 'number' },
                                                 },
                                                 required: ['name', 'age'],
-                                                additionalProperties: false,
                                             },
                                         },
                                     },
@@ -629,10 +558,9 @@ describe('koa-x-router API work with Joi', () => {
                                             type: 'object',
                                             properties: {
                                                 name: { type: 'string' },
-                                                age: { type: 'number', format: 'float' },
+                                                age: { type: 'number' },
                                             },
                                             required: ['name', 'age'],
-                                            additionalProperties: false,
                                         },
                                     },
                                 },
@@ -645,7 +573,6 @@ describe('koa-x-router API work with Joi', () => {
                                             type: 'object',
                                             properties: { message: { type: 'string' } },
                                             required: ['message'],
-                                            additionalProperties: false,
                                             description: 'User not found',
                                         },
                                     },
@@ -660,13 +587,13 @@ describe('koa-x-router API work with Joi', () => {
 
     it('Generate OpenAPI Spec from nested routes', async () => {
         const rootRouter = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         const childRouter1 = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         const childRouter2 = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
 
         rootRouter.add({
@@ -679,9 +606,7 @@ describe('koa-x-router API work with Joi', () => {
                 },
             },
             validate: {
-                query: Joi.object({
-                    name: Joi.string(),
-                }),
+                query: z.object({ name: z.string().optional() }),
             },
             handler: async (ctx) => {
                 ctx.body = `Hello World, ${ctx.query.name}`;
@@ -698,9 +623,7 @@ describe('koa-x-router API work with Joi', () => {
                     },
                 },
                 validate: {
-                    body: Joi.object({
-                        name: Joi.string(),
-                    }),
+                    body: z.object({ name: z.string().optional() }),
                 },
                 handler: async (ctx) => {
                     ctx.status = 201;
@@ -718,12 +641,7 @@ describe('koa-x-router API work with Joi', () => {
                 validate: {
                     output: {
                         200: {
-                            body: Joi.array().items(
-                                Joi.object({
-                                    name: Joi.string().required(),
-                                    age: Joi.number().required(),
-                                }),
-                            ),
+                            body: z.array(z.object({ name: z.string(), age: z.number() })),
                         },
                     },
                 },
@@ -742,20 +660,13 @@ describe('koa-x-router API work with Joi', () => {
                     },
                 },
                 validate: {
-                    params: Joi.object({
-                        id: Joi.number().positive().integer().required(),
-                    }),
+                    params: z.object({ id: z.number().positive().int() }),
                     output: {
                         200: {
-                            body: Joi.object({
-                                name: Joi.string().required(),
-                                age: Joi.number().required(),
-                            }),
+                            body: z.object({ name: z.string(), age: z.number() }),
                         },
                         404: {
-                            body: Joi.object({
-                                message: Joi.string().required(),
-                            }).description('User not found'),
+                            body: z.object({ message: z.string() }).describe('User not found'),
                         },
                     },
                 },
@@ -805,7 +716,6 @@ describe('koa-x-router API work with Joi', () => {
                                     schema: {
                                         type: 'object',
                                         properties: { name: { type: 'string' } },
-                                        additionalProperties: false,
                                     },
                                 },
                             },
@@ -824,10 +734,9 @@ describe('koa-x-router API work with Joi', () => {
                                                 type: 'object',
                                                 properties: {
                                                     name: { type: 'string' },
-                                                    age: { type: 'number', format: 'float' },
+                                                    age: { type: 'number' },
                                                 },
                                                 required: ['name', 'age'],
-                                                additionalProperties: false,
                                             },
                                         },
                                     },
@@ -844,7 +753,7 @@ describe('koa-x-router API work with Joi', () => {
                                 in: 'path',
                                 name: 'id',
                                 schema: {
-                                    minimum: 1,
+                                    exclusiveMinimum: 0,
                                     type: 'integer',
                                 },
                             },
@@ -858,10 +767,9 @@ describe('koa-x-router API work with Joi', () => {
                                             type: 'object',
                                             properties: {
                                                 name: { type: 'string' },
-                                                age: { type: 'number', format: 'float' },
+                                                age: { type: 'number' },
                                             },
                                             required: ['name', 'age'],
-                                            additionalProperties: false,
                                         },
                                     },
                                 },
@@ -874,7 +782,6 @@ describe('koa-x-router API work with Joi', () => {
                                             type: 'object',
                                             properties: { message: { type: 'string' } },
                                             required: ['message'],
-                                            additionalProperties: false,
                                             description: 'User not found',
                                         },
                                     },
@@ -889,14 +796,14 @@ describe('koa-x-router API work with Joi', () => {
 
     it('Generate OpenAPI Spec from nested routes with prefix', async () => {
         const rootRouter = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         const childRouter1 = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         childRouter1.prefix('/child1');
         const childRouter2 = new Router({
-            adaptors: [JoiAdaptor],
+            adaptors: [ZodAdaptor],
         });
         childRouter2.prefix('/child2');
 
@@ -910,8 +817,8 @@ describe('koa-x-router API work with Joi', () => {
                 },
             },
             validate: {
-                query: Joi.object({
-                    name: Joi.string(),
+                query: z.object({
+                    name: z.string(),
                 }),
             },
             handler: async (ctx) => {
@@ -929,9 +836,7 @@ describe('koa-x-router API work with Joi', () => {
                     },
                 },
                 validate: {
-                    body: Joi.object({
-                        name: Joi.string(),
-                    }),
+                    body: z.object({ name: z.string().optional() }),
                 },
                 handler: async (ctx) => {
                     ctx.status = 201;
@@ -949,12 +854,7 @@ describe('koa-x-router API work with Joi', () => {
                 validate: {
                     output: {
                         200: {
-                            body: Joi.array().items(
-                                Joi.object({
-                                    name: Joi.string().required(),
-                                    age: Joi.number().required(),
-                                }),
-                            ),
+                            body: z.array(z.object({ name: z.string(), age: z.number() }).optional()),
                         },
                     },
                 },
@@ -973,20 +873,13 @@ describe('koa-x-router API work with Joi', () => {
                     },
                 },
                 validate: {
-                    params: Joi.object({
-                        id: Joi.number().positive().integer().required(),
-                    }),
+                    params: z.object({ id: z.number().positive().int() }),
                     output: {
                         200: {
-                            body: Joi.object({
-                                name: Joi.string().required(),
-                                age: Joi.number().required(),
-                            }),
+                            body: z.object({ name: z.string(), age: z.number() }),
                         },
                         404: {
-                            body: Joi.object({
-                                message: Joi.string().required(),
-                            }).description('User not found'),
+                            body: z.object({ message: z.string() }).optional().describe('User not found'),
                         },
                     },
                 },
@@ -1036,7 +929,6 @@ describe('koa-x-router API work with Joi', () => {
                                     schema: {
                                         type: 'object',
                                         properties: { name: { type: 'string' } },
-                                        additionalProperties: false,
                                     },
                                 },
                             },
@@ -1055,10 +947,9 @@ describe('koa-x-router API work with Joi', () => {
                                                 type: 'object',
                                                 properties: {
                                                     name: { type: 'string' },
-                                                    age: { type: 'number', format: 'float' },
+                                                    age: { type: 'number' },
                                                 },
                                                 required: ['name', 'age'],
-                                                additionalProperties: false,
                                             },
                                         },
                                     },
@@ -1075,7 +966,7 @@ describe('koa-x-router API work with Joi', () => {
                                 in: 'path',
                                 name: 'id',
                                 schema: {
-                                    minimum: 1,
+                                    exclusiveMinimum: 0,
                                     type: 'integer',
                                 },
                             },
@@ -1089,10 +980,9 @@ describe('koa-x-router API work with Joi', () => {
                                             type: 'object',
                                             properties: {
                                                 name: { type: 'string' },
-                                                age: { type: 'number', format: 'float' },
+                                                age: { type: 'number' },
                                             },
                                             required: ['name', 'age'],
-                                            additionalProperties: false,
                                         },
                                     },
                                 },
@@ -1105,7 +995,6 @@ describe('koa-x-router API work with Joi', () => {
                                             type: 'object',
                                             properties: { message: { type: 'string' } },
                                             required: ['message'],
-                                            additionalProperties: false,
                                             description: 'User not found',
                                         },
                                     },
