@@ -7,7 +7,7 @@
   "module": "dist/esm/index.js",
   "scripts": {
     "test": "jest",
-    "build": "rm -rf ./dist && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
+    "build": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
     "prepublish": "npm run build",
     "prepublishOnly": "npm run build"
   },

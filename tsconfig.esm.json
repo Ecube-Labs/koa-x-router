@@ -3,6 +3,6 @@
   "exclude": ["node_modules", "**/*.test.ts", "test"],
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "esModuleInterop": true,
+    "outDir": "dist/esm"
   }
 }
