@@ -25,11 +25,11 @@ export const ZodAdaptor: XRouterAdaptor = {
 
         const registry = new OpenAPIRegistry();
 
-        registry.register('foo', schema);
+        registry.register('schema', schema);
 
         const generator = new OpenApiGeneratorV31(registry.definitions);
 
-        const schemaObject = generator.generateComponents().components?.schemas?.foo;
+        const schemaObject = generator.generateComponents().components?.schemas?.schema;
 
         if (!schemaObject) {
             throw new Error('Failed to generate schema object');
