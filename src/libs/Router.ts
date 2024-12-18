@@ -63,6 +63,11 @@ export interface RouteLayerSpec<StateT = any, CustomT = {}> {
     handler: KoaRouter.Middleware<StateT, CustomT>;
 }
 
+// CJS/ESM 호환을 위해 인터페이스를 따로 정의한다.
+export interface Router<StateT = any, CustomT = {}> extends KoaRouter<StateT, CustomT> {
+    adaptors: Record<string, XRouterAdaptor>;
+}
+
 /**
  * 공통 인터페이스를 기반으로 validation을 수행하는 koa-router 기반의 라우터
  * 각 route handler의 validate.[header | query | params | body | output]에 대한 validation을 수행한다.
