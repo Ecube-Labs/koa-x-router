@@ -139,6 +139,14 @@ import { JoiAdaptor } from 'koa-x-router/joi';
 import { ZodAdaptor } from 'koa-x-router/zod';
 ```
 
+Migrate JavaScript and TypeScript projects automatically with the official codemod:
+
+```shell
+npx codemod @ecube-labs/koa-x-router-v0-1-adaptor-imports@0.1.0
+```
+
+The codemod supports ESM imports and re-exports as well as CommonJS `require` calls. Review namespace imports manually. See the [codemod documentation](./codemods/v0.1-adaptor-imports/README.md) for supported patterns and local development instructions.
+
 ## Contributing
 
 Contributions are welcome!
