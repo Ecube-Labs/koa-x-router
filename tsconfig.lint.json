@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig.base.json",
-  "include": ["src", "./.eslintrc.cjs", "./.prettierrc.cjs", "jest.config.ts"],
-  "exclude": ["node_modules", "test"]
+    "extends": "./tsconfig.base.json",
+    "include": ["src", "scripts", "test", "./.eslintrc.cjs", "./.prettierrc.cjs", "jest.config.ts"],
+    "exclude": ["node_modules", "dist"]
 }

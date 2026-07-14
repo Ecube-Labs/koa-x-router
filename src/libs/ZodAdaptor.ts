@@ -3,7 +3,7 @@
  */
 import { z } from 'zod';
 import { extendZodWithOpenApi, OpenApiGeneratorV31, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
-import type { XRouterAdaptor } from './Router';
+import type { XRouterAdaptor } from './Router.js';
 
 extendZodWithOpenApi(z);
 

@@ -2,7 +2,8 @@ import { z } from 'zod';
 import request from 'supertest';
 import koaBodyParser from 'koa-bodyparser';
 import { getApp } from '../../test/app';
-import { ZodAdaptor, Router } from '.';
+import { Router } from './Router';
+import { ZodAdaptor } from './ZodAdaptor';
 
 describe('koa-x-router API work with Zod', () => {
     it('should be define validate schema', async () => {
