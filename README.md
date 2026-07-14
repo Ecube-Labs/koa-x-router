@@ -35,7 +35,10 @@ npm install @types/koa @types/koa__router -D
 
 ## Usage
 
-[Demo](https://stackblitz.com/edit/koa-x-router-demo?file=index.ts)
+### Demos
+
+-   [ESM](https://stackblitz.com/edit/koa-x-router-demo?file=index.ts)
+-   [CommonJS](https://stackblitz.com/edit/koa-x-router-demo-cjs)
 
 To use `koa-x-router`, import it and initialize it with an instance of `@koa/router`. Here's a basic example:
 
