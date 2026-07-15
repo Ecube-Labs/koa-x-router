@@ -1,0 +1,24 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "printWidth": 120,
+    "tabWidth": 4,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "endOfLine": "lf",
+    "bracketSpacing": true,
+    "arrowParens": "always",
+    "sortPackageJson": false,
+    "ignorePatterns": ["dist/**", "coverage/**", "codemods/**/tests/**"],
+    "overrides": [
+        {
+            "files": ["**/.vscode/*.json", "**/tsconfig.json", "**/tsconfig.*.json"],
+            "options": {
+                "quoteProps": "preserve",
+                "singleQuote": false,
+                "trailingComma": "all"
+            }
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import request from 'supertest';
 import koaBodyParser from 'koa-bodyparser';
+import { describe, expect, it } from 'vitest';
 import { getApp } from '../../test/app';
 import { JoiAdaptor } from './JoiAdaptor';
 import { Router } from './Router';

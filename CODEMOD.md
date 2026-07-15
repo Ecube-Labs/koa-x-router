@@ -4,12 +4,12 @@ This document defines the standard process for creating, modifying, validating, 
 
 ## Principles
 
--   A codemod must be idempotent. Running it repeatedly against the same input must not produce additional changes.
--   Every supported JavaScript and TypeScript syntax must be covered by a fixture.
--   Leave ambiguous code unchanged and document the required manual migration in the package README.
--   Limit each codemod to one breaking change or one clearly defined migration.
--   Never modify or reuse a version or Git tag that has already been published. Publish corrections as a new version.
--   Pin an exact codemod version in automated migrations to keep runs reproducible.
+- A codemod must be idempotent. Running it repeatedly against the same input must not produce additional changes.
+- Every supported JavaScript and TypeScript syntax must be covered by a fixture.
+- Leave ambiguous code unchanged and document the required manual migration in the package README.
+- Limit each codemod to one breaking change or one clearly defined migration.
+- Never modify or reuse a version or Git tag that has already been published. Publish corrections as a new version.
+- Pin an exact codemod version in automated migrations to keep runs reproducible.
 
 ## Repository Structure
 
@@ -29,11 +29,11 @@ codemods/<migration>/
 
 Every package README must document:
 
--   A before-and-after example
--   Supported syntax and file extensions
--   Intentionally unsupported syntax and its manual migration
--   Registry commands, including a version-pinned example
--   Local development and publishing commands
+- A before-and-after example
+- Supported syntax and file extensions
+- Intentionally unsupported syntax and its manual migration
+- Registry commands, including a version-pinned example
+- Local development and publishing commands
 
 ## Choosing a Tool
 
@@ -68,10 +68,10 @@ npm run check
 
 `npm run check` performs all of the following:
 
--   `tsc --noEmit`: transform script type checking
--   `codemod workflow validate`: Registry workflow schema validation
--   JavaScript fixture tests
--   TypeScript and TSX fixture tests
+- `tsc --noEmit`: transform script type checking
+- `codemod workflow validate`: Registry workflow schema validation
+- JavaScript fixture tests
+- TypeScript and TSX fixture tests
 
 Validate the transform against a real project before publishing it. Run it from a clean branch, inspect `git diff`, and execute the consumer project's own tests.
 
@@ -99,13 +99,13 @@ tests/typescript/new-case/expected/
 
 The minimum fixture coverage is:
 
--   The most common form of the transformation
--   Syntax containing both target and non-target symbols
--   Aliases and type-only syntax
--   Preservation of existing style, including semicolons and quote style
--   Already migrated code that must remain unchanged
--   Every supported ESM and CommonJS form
--   A real JSX or TSX file when JSX or TSX support is advertised
+- The most common form of the transformation
+- Syntax containing both target and non-target symbols
+- Aliases and type-only syntax
+- Preservation of existing style, including semicolons and quote style
+- Already migrated code that must remain unchanged
+- Every supported ESM and CommonJS form
+- A real JSX or TSX file when JSX or TSX support is advertised
 
 Use a no-op fixture with identical `input` and `expected` files to verify idempotence and prevent false positives. When snapshots are updated in bulk, inspect the generated diff manually.
 
@@ -148,15 +148,15 @@ Keep `capabilities` in `codemod.yaml` as an empty array unless the transform req
 
 The codemod version is independent of the `koa-x-router` version. The `v0-1` segment in the package name identifies the migration target, while `0.1.0` in `codemod.yaml` is the codemod's own version.
 
--   PATCH: bug fixes, false-positive or false-negative corrections, and documentation corrections
--   MINOR: support for new syntax without breaking existing behavior
--   MAJOR: incompatible changes to output, options, or existing transformation results
+- PATCH: bug fixes, false-positive or false-negative corrections, and documentation corrections
+- MINOR: support for new syntax without breaking existing behavior
+- MAJOR: incompatible changes to output, options, or existing transformation results
 
 Keep the version synchronized in these files:
 
--   `codemod.yaml`
--   `package.json`
--   `package-lock.json`
+- `codemod.yaml`
+- `package.json`
+- `package-lock.json`
 
 Update the npm metadata first, then set the same version in `codemod.yaml`:
 
@@ -184,11 +184,11 @@ npx codemod publish
 
 Configure these values in Codemod's Trusted Publishers settings when required:
 
--   Package: the complete scoped Registry package name
--   Owner: `Ecube-Labs`
--   Repository: `koa-x-router`
--   Workflow: `.github/workflows/publish-codemod.yml`
--   Ref pattern: the tag pattern for the codemod
+- Package: the complete scoped Registry package name
+- Owner: `Ecube-Labs`
+- Repository: `koa-x-router`
+- Workflow: `.github/workflows/publish-codemod.yml`
+- Ref pattern: the tag pattern for the codemod
 
 Do not add an API key or long-lived token as a repository secret. Prefer GitHub Actions OIDC.
 
@@ -246,10 +246,10 @@ npm test
 
 ### OIDC Publishing Failure
 
--   Confirm that the GitHub organization and Registry scope are linked.
--   Confirm that the workflow grants `id-token: write` and `contents: read`.
--   Check the tag pattern, publish action `path`, and package name in `codemod.yaml`.
--   Check the owner, repository, workflow path, and ref restriction configured for the Trusted Publisher.
+- Confirm that the GitHub organization and Registry scope are linked.
+- Confirm that the workflow grants `id-token: write` and `contents: read`.
+- Check the tag pattern, publish action `path`, and package name in `codemod.yaml`.
+- Check the owner, repository, workflow path, and ref restriction configured for the Trusted Publisher.
 
 ### Version Already Exists
 
@@ -267,22 +267,22 @@ npx codemod unpublish @ecube-labs/koa-x-router-v0-1-adaptor-imports \
 
 ## Review Checklist
 
--   [ ] The transform scope matches the breaking change.
--   [ ] Required fixtures exist for both JavaScript and TypeScript.
--   [ ] ESM and CommonJS support matches the implementation and documentation.
--   [ ] Alias, type-only, mixed, and no-op cases are covered.
--   [ ] The transform is idempotent and does not change unrelated code.
--   [ ] Unsupported syntax and its manual migration are documented.
--   [ ] `npm run check` passes.
--   [ ] The diff and tests from a real consumer project were reviewed.
--   [ ] All three version files and the README execution version match.
--   [ ] The GitHub Actions tag pattern and publish path are correct.
--   [ ] The workflow uses minimum permissions without a new secret.
--   [ ] Registry search and exact-version execution were verified after publishing.
+- [ ] The transform scope matches the breaking change.
+- [ ] Required fixtures exist for both JavaScript and TypeScript.
+- [ ] ESM and CommonJS support matches the implementation and documentation.
+- [ ] Alias, type-only, mixed, and no-op cases are covered.
+- [ ] The transform is idempotent and does not change unrelated code.
+- [ ] Unsupported syntax and its manual migration are documented.
+- [ ] `npm run check` passes.
+- [ ] The diff and tests from a real consumer project were reviewed.
+- [ ] All three version files and the README execution version match.
+- [ ] The GitHub Actions tag pattern and publish path are correct.
+- [ ] The workflow uses minimum permissions without a new secret.
+- [ ] Registry search and exact-version execution were verified after publishing.
 
 ## References
 
--   Codemod CLI: https://docs.codemod.com/cli
--   JSSG testing: https://docs.codemod.com/jssg/testing
--   Registry: https://docs.codemod.com/platform/registry
--   Publishing and OIDC: https://docs.codemod.com/publishing
+- Codemod CLI: https://docs.codemod.com/cli
+- JSSG testing: https://docs.codemod.com/jssg/testing
+- Registry: https://docs.codemod.com/platform/registry
+- Publishing and OIDC: https://docs.codemod.com/publishing

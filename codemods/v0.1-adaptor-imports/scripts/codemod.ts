@@ -29,13 +29,18 @@ function adaptorName(node: SgNode<TSX>): AdaptorName | null {
     return null;
 }
 
-function splitModuleStatement(node: SgNode<TSX>, specifierKind: 'import_specifier' | 'export_specifier'): string | null {
+function splitModuleStatement(
+    node: SgNode<TSX>,
+    specifierKind: 'import_specifier' | 'export_specifier',
+): string | null {
     const source = node.field('source');
     if (!source || unquote(source.text()) !== PACKAGE_NAME) {
         return null;
     }
 
-    const namedSpecifiers = node.find({ rule: { kind: specifierKind === 'import_specifier' ? 'named_imports' : 'export_clause' } });
+    const namedSpecifiers = node.find({
+        rule: { kind: specifierKind === 'import_specifier' ? 'named_imports' : 'export_clause' },
+    });
     if (!namedSpecifiers) {
         return null;
     }
@@ -100,9 +105,13 @@ function splitModuleStatement(node: SgNode<TSX>, specifierKind: 'import_specifie
 }
 
 function objectPatternProperties(pattern: SgNode<TSX>): SgNode<TSX>[] {
-    return pattern.children().filter((child) =>
-        ['shorthand_property_identifier_pattern', 'pair_pattern', 'assignment_pattern', 'rest_pattern'].includes(child.kind()),
-    );
+    return pattern
+        .children()
+        .filter((child) =>
+            ['shorthand_property_identifier_pattern', 'pair_pattern', 'assignment_pattern', 'rest_pattern'].includes(
+                child.kind(),
+            ),
+        );
 }
 
 function requireSource(value: SgNode<TSX> | null): SgNode<TSX> | null {
@@ -157,7 +166,9 @@ function splitRequireDeclaration(node: SgNode<TSX>): string | null {
     const output: string[] = [];
 
     if (remaining.length > 0) {
-        output.push(`${keyword} { ${remaining.map((property) => property.text()).join(', ')} } = require(${source.text()})${semicolon}`);
+        output.push(
+            `${keyword} { ${remaining.map((property) => property.text()).join(', ')} } = require(${source.text()})${semicolon}`,
+        );
     }
 
     for (const name of ['JoiAdaptor', 'ZodAdaptor'] as const) {
@@ -210,7 +221,9 @@ const codemod: Codemod<TSX> = async (root) => {
         }
     }
 
-    for (const node of rootNode.findAll({ rule: { any: [{ kind: 'lexical_declaration' }, { kind: 'variable_declaration' }] } })) {
+    for (const node of rootNode.findAll({
+        rule: { any: [{ kind: 'lexical_declaration' }, { kind: 'variable_declaration' }] },
+    })) {
         const replacement = splitRequireDeclaration(node);
         if (replacement) {
             edits.push(node.replace(replacement));

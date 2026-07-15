@@ -7,9 +7,9 @@
 
 ## Features
 
--   **Validation**: With `koa-x-router`, you can perform validation using various validation libraries. The library provides adapters such as `JoiAdaptor` and `ZodAdaptor` that allow you to define validation schemas using popular validation libraries like `Joi` or `Zod`. You can also implement your own custom adapter by implementing the `XRouterAdaptor` interface.
+- **Validation**: With `koa-x-router`, you can perform validation using various validation libraries. The library provides adapters such as `JoiAdaptor` and `ZodAdaptor` that allow you to define validation schemas using popular validation libraries like `Joi` or `Zod`. You can also implement your own custom adapter by implementing the `XRouterAdaptor` interface.
 
--   **Automatic API Documentation**: `koa-x-router` automatically generates API documentation based on your route definitions. It extracts information about route paths, request methods, request/response data structures, and validation rules. The generated documentation can be accessed through an endpoint, making it convenient for developers to understand and consume your API.
+- **Automatic API Documentation**: `koa-x-router` automatically generates API documentation based on your route definitions. It extracts information about route paths, request methods, request/response data structures, and validation rules. The generated documentation can be accessed through an endpoint, making it convenient for developers to understand and consume your API.
 
 ## Installation
 
@@ -37,8 +37,8 @@ npm install @types/koa @types/koa__router -D
 
 ### Demos
 
--   [ESM](https://stackblitz.com/edit/koa-x-router-demo?file=index.ts)
--   [CommonJS](https://stackblitz.com/edit/koa-x-router-demo-cjs)
+- [ESM](https://stackblitz.com/edit/koa-x-router-demo?file=index.ts)
+- [CommonJS](https://stackblitz.com/edit/koa-x-router-demo-cjs)
 
 To use `koa-x-router`, import it and initialize it with an instance of `@koa/router`. Here's a basic example:
 
