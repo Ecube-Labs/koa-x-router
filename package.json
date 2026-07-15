@@ -6,6 +6,16 @@
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/cjs/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "joi": [
+        "./dist/cjs/joi.d.ts"
+      ],
+      "zod": [
+        "./dist/cjs/zod.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "test": "jest",
     "test:package": "node --test test/package.test.cjs",

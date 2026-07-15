@@ -11,11 +11,11 @@ Migrates `koa-x-router` v0.0 root adaptor imports to the optional v0.1 subpath e
 
 The transform supports JavaScript, JSX, TypeScript, TSX, and their Node-specific module extensions. It handles:
 
-- ESM named imports and re-exports, including aliases and type-only imports
-- CommonJS destructuring from `require('koa-x-router')`
-- Direct CommonJS access such as `require('koa-x-router').JoiAdaptor`
-- Mixed imports while preserving non-adaptor exports on the package root
-- Repeated runs without changing already migrated code
+-   ESM named imports and re-exports, including aliases and type-only imports
+-   CommonJS destructuring from `require('koa-x-router')`
+-   Direct CommonJS access such as `require('koa-x-router').JoiAdaptor`
+-   Mixed imports while preserving non-adaptor exports on the package root
+-   Repeated runs without changing already migrated code
 
 Namespace bindings such as `import * as xRouter from 'koa-x-router'` or `const xRouter = require('koa-x-router')` require manual migration because safely splitting their member references requires project-level symbol analysis.
 

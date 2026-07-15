@@ -129,6 +129,8 @@ const { JoiAdaptor } = require('koa-x-router/joi');
 const { ZodAdaptor } = require('koa-x-router/zod');
 ```
 
+No `paths` mapping is required for the package subpaths. Legacy TypeScript projects using `module: "CommonJS"` with `moduleResolution: "Node"` are supported through declaration fallbacks; new Node.js projects should prefer `Node16` or `NodeNext` module resolution.
+
 ### Migrating to 0.1
 
 Validation adapters are no longer exported from the package root. Import them from their dedicated entry points so applications only load the validation library they use:
@@ -151,6 +153,8 @@ The codemod supports ESM imports and re-exports as well as CommonJS `require` ca
 
 Contributions are welcome!
 If you have any suggestions, bug reports, or feature requests, please open an issue.
+
+See [CODEMOD.md](./CODEMOD.md) for instructions on creating, testing, maintaining, and publishing migration codemods.
 
 ## License
 

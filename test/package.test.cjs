@@ -70,7 +70,11 @@ test('does not load optional validation peers from the root entry', () => {
     ]);
 });
 
-test('provides types for NodeNext CommonJS, NodeNext ESM, and bundlers', () => {
+test('provides types for Node10 CommonJS, NodeNext CommonJS, NodeNext ESM, and bundlers', () => {
+    writeFileSync(
+        join(consumer, 'consumer.ts'),
+        `import { Router } from 'koa-x-router';\nimport { JoiAdaptor } from 'koa-x-router/joi';\nimport { ZodAdaptor } from 'koa-x-router/zod';\nvoid [Router, JoiAdaptor, ZodAdaptor];\n`,
+    );
     writeFileSync(
         join(consumer, 'consumer.mts'),
         `import { Router } from 'koa-x-router';\nimport { JoiAdaptor } from 'koa-x-router/joi';\nimport { ZodAdaptor } from 'koa-x-router/zod';\nvoid [Router, JoiAdaptor, ZodAdaptor];\n`,
@@ -78,6 +82,19 @@ test('provides types for NodeNext CommonJS, NodeNext ESM, and bundlers', () => {
     writeFileSync(
         join(consumer, 'consumer.cts'),
         `import { Router } from 'koa-x-router';\nimport { JoiAdaptor } from 'koa-x-router/joi';\nimport { ZodAdaptor } from 'koa-x-router/zod';\nvoid [Router, JoiAdaptor, ZodAdaptor];\n`,
+    );
+    writeFileSync(
+        join(consumer, 'tsconfig.node10.json'),
+        JSON.stringify({
+            compilerOptions: {
+                module: 'CommonJS',
+                moduleResolution: 'Node10',
+                esModuleInterop: true,
+                noEmit: true,
+                strict: true,
+            },
+            files: ['./consumer.ts'],
+        }),
     );
     writeFileSync(
         join(consumer, 'tsconfig.nodenext.json'),
@@ -95,6 +112,7 @@ test('provides types for NodeNext CommonJS, NodeNext ESM, and bundlers', () => {
     );
 
     const tsc = join(root, 'node_modules', '.bin', 'tsc');
+    run(tsc, ['-p', 'tsconfig.node10.json']);
     run(tsc, ['-p', 'tsconfig.nodenext.json']);
     run(tsc, ['-p', 'tsconfig.bundler.json']);
 });
