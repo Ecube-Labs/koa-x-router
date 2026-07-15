@@ -1,0 +1,31 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "categories": {
+        "correctness": "error",
+        "suspicious": "warn",
+        "perf": "warn"
+    },
+    "plugins": ["eslint", "typescript", "unicorn", "oxc", "import", "node", "vitest"],
+    "env": {
+        "node": true
+    },
+    "ignorePatterns": ["dist/**", "coverage/**", "codemods/**/tests/**"],
+    "rules": {
+        "eqeqeq": "error",
+        "eslint/no-shadow": "off",
+        "eslint/no-underscore-dangle": "off",
+        "oxc/no-accumulating-spread": "off",
+        "typescript/no-shadow": "warn",
+        "typescript/no-unsafe-declaration-merging": "off",
+        "typescript/no-unused-vars": [
+            "warn",
+            {
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_"
+            }
+        ],
+        "vitest/prefer-to-be": "error",
+        "vitest/prefer-to-contain": "error",
+        "vitest/prefer-to-have-length": "error"
+    }
+}

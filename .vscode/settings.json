@@ -1,8 +1,9 @@
 {
     "typescript.tsdk": "node_modules/typescript/lib",
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": false,
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
-    },
-    "eslint.validate": ["javascript", "typescript", "typescriptreact"],
+        "source.format.oxc": "explicit",
+        "source.fixAll.oxc": "explicit"
+    }
 }

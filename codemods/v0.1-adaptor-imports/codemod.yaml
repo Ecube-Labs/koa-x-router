@@ -1,0 +1,24 @@
+schema_version: '1.0'
+
+name: '@ecube-labs/koa-x-router-v0-1-adaptor-imports'
+version: '0.1.0'
+description: 'Move koa-x-router JoiAdaptor and ZodAdaptor imports to the v0.1 subpath exports'
+author: 'Ecube Labs'
+license: 'Apache-2.0'
+repository: 'https://github.com/Ecube-Labs/koa-x-router'
+
+targets:
+    languages: ['javascript', 'jsx', 'typescript', 'tsx']
+
+keywords: ['koa-x-router', 'migration', 'joi', 'zod', 'javascript', 'typescript']
+
+registry:
+    access: 'public'
+    visibility: 'public'
+
+capabilities: []
+
+workflows:
+    - name: main
+      default: true
+      path: workflow.yaml

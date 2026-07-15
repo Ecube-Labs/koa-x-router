@@ -1,0 +1,39 @@
+name: Codemod
+
+on:
+    pull_request:
+        paths:
+            - 'codemods/v0.1-adaptor-imports/**'
+            - '.github/workflows/publish-codemod.yml'
+    push:
+        tags:
+            - 'koa-x-router-v0-1-adaptor-imports@v*'
+
+permissions:
+    contents: read
+    id-token: write
+
+jobs:
+    validate:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 20.19.0
+                  cache: npm
+                  cache-dependency-path: codemods/v0.1-adaptor-imports/package-lock.json
+            - run: npm ci
+              working-directory: codemods/v0.1-adaptor-imports
+            - run: npm run check
+              working-directory: codemods/v0.1-adaptor-imports
+
+    publish:
+        if: github.event_name == 'push'
+        needs: validate
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: codemod/publish-action@v1
+              with:
+                  path: codemods/v0.1-adaptor-imports

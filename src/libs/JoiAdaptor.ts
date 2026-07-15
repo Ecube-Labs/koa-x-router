@@ -3,7 +3,7 @@
  */
 import Joi from 'joi';
 import j2s from 'joi-to-swagger';
-import { XRouterAdaptor } from './Router';
+import type { XRouterAdaptor } from './Router.js';
 
 export const JoiAdaptor: XRouterAdaptor = {
     name: 'joi',
@@ -36,7 +36,8 @@ export const JoiAdaptor: XRouterAdaptor = {
 
     schemaToOpenApiSchema(schemaLike) {
         const schema = Joi.isSchema(schemaLike) ? schemaLike : Joi.object(schemaLike);
+        const joiToSwagger = j2s as unknown as (value: Joi.Schema) => { swagger: Record<string, unknown> };
 
-        return j2s(schema).swagger;
+        return joiToSwagger(schema).swagger;
     },
 };

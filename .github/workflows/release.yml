@@ -1,0 +1,48 @@
+name: Release
+
+on:
+    push:
+        branches:
+            - main
+            - develop
+
+permissions:
+    contents: write
+    issues: write
+    pull-requests: write
+    id-token: write
+
+concurrency:
+    group: release-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    release:
+        name: Test and release
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Test package
+              run: |
+                  npm test
+                  npm run lint
+                  npm run prepack
+
+            - name: Release package
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: npx --yes semantic-release@25

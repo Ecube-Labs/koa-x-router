@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/codemod/codemod/refs/heads/main/schemas/workflow.json
+
+version: '1'
+
+nodes:
+    - id: migrate-adaptor-imports
+      name: Migrate koa-x-router v0.1 adaptor imports
+      type: automatic
+      steps:
+          - name: Rewrite ESM and CommonJS imports
+            js-ast-grep:
+                js_file: scripts/codemod.ts
+                base_path: '.'
+                language: 'tsx'
+                include:
+                    - '**/*.js'
+                    - '**/*.jsx'
+                    - '**/*.mjs'
+                    - '**/*.cjs'
+                    - '**/*.ts'
+                    - '**/*.tsx'
+                    - '**/*.mts'
+                    - '**/*.cts'
+                exclude:
+                    - '**/node_modules/**'
+                    - '**/dist/**'
+                    - '**/build/**'
+                    - '**/coverage/**'

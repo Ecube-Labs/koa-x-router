@@ -13,6 +13,8 @@
 
 ## Installation
 
+`koa-x-router` supports Node.js 20.19 and later and publishes both ESM and CommonJS entry points.
+
 You can install koa-x-router with joi using npm:
 
 ```shell
@@ -33,50 +35,55 @@ npm install @types/koa @types/koa__router -D
 
 ## Usage
 
-[Demo](https://stackblitz.com/edit/koa-x-router-demo?file=index.ts)
+### Demos
+
+- [ESM](https://stackblitz.com/edit/koa-x-router-demo?file=index.ts)
+- [CommonJS](https://stackblitz.com/edit/koa-x-router-demo-cjs)
 
 To use `koa-x-router`, import it and initialize it with an instance of `@koa/router`. Here's a basic example:
 
 ```ts
-import Koa from "koa";
-import bodyParser from "koa-bodyparser";
-import Joi from "joi"
-import { Router, JoiAdaptor, ZodAdaptor } from "koa-x-router";
+import Koa from 'koa';
+import bodyParser from 'koa-bodyparser';
+import Joi from 'joi';
+import { Router } from 'koa-x-router';
+import { JoiAdaptor } from 'koa-x-router/joi';
+// import { ZodAdaptor } from "koa-x-router/zod";
 
 const app = new Koa();
 const router = new Router({
-  adaptors: [JoiAdaptor], // <== Important!
-  // adaptors: [ZodAdaptor], // If you want to use with Zod
-  // adaptors: [JoiAdaptor, ZodAdaptor], // or both
+    adaptors: [JoiAdaptor], // <== Important!
+    // adaptors: [ZodAdaptor], // If you want to use with Zod
+    // adaptors: [JoiAdaptor, ZodAdaptor], // or both
 });
 const docRouter = new Router();
 
 // Define a route with validation
 router.add({
-  method: "get",
-  path: "/users",
-  validate: {
-    query: Joi.object({
-      name: Joi.string(),
-    }),
-    output: {
-      200: {
-        body: Joi.array().items(
-          Joi.object({
-            name: Joi.string().required(),
-            age: Joi.number().positive().required(),
-          })
-        ),
-      },
+    method: 'get',
+    path: '/users',
+    validate: {
+        query: Joi.object({
+            name: Joi.string(),
+        }),
+        output: {
+            200: {
+                body: Joi.array().items(
+                    Joi.object({
+                        name: Joi.string().required(),
+                        age: Joi.number().positive().required(),
+                    }),
+                ),
+            },
+        },
     },
-  },
-  handler: async (ctx) => {
-    // code...
-  },
+    handler: async (ctx) => {
+        // code...
+    },
 });
 
-docRouter.get("/", (ctx) => {
-  ctx.body = `<!DOCTYPE html>
+docRouter.get('/', (ctx) => {
+    ctx.body = `<!DOCTYPE html>
   <html>
   <head>
     <meta charset="UTF-8">
@@ -93,13 +100,13 @@ docRouter.get("/", (ctx) => {
   </html>`;
 });
 
-docRouter.get("/openapi.json", (ctx) => {
-  ctx.body = router.generateOpenApiSpecJson({
-    info: {
-      title: "koa-x-router Demo API Docs",
-      version: "1.0.0",
-    },
-  });
+docRouter.get('/openapi.json', (ctx) => {
+    ctx.body = router.generateOpenApiSpecJson({
+        info: {
+            title: 'koa-x-router Demo API Docs',
+            version: '1.0.0',
+        },
+    });
 });
 
 app.use(docRouter.routes());
@@ -107,17 +114,47 @@ app.use(bodyParser());
 app.use(router.routes());
 
 app.listen(3000, () => {
-  console.log("Server listening on port 3000");
+    console.log('Server listening on port 3000');
 });
 ```
 
 You can also implement your custom adapter by implementing the `XRouterAdaptor` interface.
 This allows you to use your preferred validation library for route validation.
 
+### CommonJS
+
+```js
+const { Router } = require('koa-x-router');
+const { JoiAdaptor } = require('koa-x-router/joi');
+const { ZodAdaptor } = require('koa-x-router/zod');
+```
+
+No `paths` mapping is required for the package subpaths. Legacy TypeScript projects using `module: "CommonJS"` with `moduleResolution: "Node"` are supported through declaration fallbacks; new Node.js projects should prefer `Node16` or `NodeNext` module resolution.
+
+### Migrating to 0.1
+
+Validation adapters are no longer exported from the package root. Import them from their dedicated entry points so applications only load the validation library they use:
+
+```ts
+import { Router } from 'koa-x-router';
+import { JoiAdaptor } from 'koa-x-router/joi';
+import { ZodAdaptor } from 'koa-x-router/zod';
+```
+
+Migrate JavaScript and TypeScript projects automatically with the official codemod:
+
+```shell
+npx codemod @ecube-labs/koa-x-router-v0-1-adaptor-imports@0.1.0
+```
+
+The codemod supports ESM imports and re-exports as well as CommonJS `require` calls. Review namespace imports manually. See the [codemod documentation](./codemods/v0.1-adaptor-imports/README.md) for supported patterns and local development instructions.
+
 ## Contributing
 
 Contributions are welcome!
 If you have any suggestions, bug reports, or feature requests, please open an issue.
+
+See [CODEMOD.md](./CODEMOD.md) for instructions on creating, testing, maintaining, and publishing migration codemods.
 
 ## License
 
