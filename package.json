@@ -116,7 +116,7 @@
         }
     },
     "dependencies": {
-        "@asteasolutions/zod-to-openapi": "^7.1.1",
+        "@asteasolutions/zod-to-openapi": "^9.0.0",
         "joi-to-swagger": "^6.2.0",
         "openapi3-ts": "^4.1.2"
     }
