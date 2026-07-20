@@ -121,6 +121,25 @@ app.listen(3000, () => {
 You can also implement your custom adapter by implementing the `XRouterAdaptor` interface.
 This allows you to use your preferred validation library for route validation.
 
+### Catch-all routes (`method: 'all'`)
+
+Use `method: 'all'` (case-insensitive) to register a catch-all route that matches every
+HTTP verb the router supports, mirroring `@koa/router`'s `router.all()` and keeping
+compatibility with `koa-joi-router`. This is handy for proxy or fallback handlers:
+
+```ts
+router.add({
+    method: 'all',
+    path: '/hubspot/:path(.*)',
+    handler: async (ctx) => {
+        // handles GET, POST, PUT, PATCH, DELETE, ... on /hubspot/*
+    },
+});
+```
+
+In the generated OpenAPI spec, an `'all'` route is expanded into one operation per
+supported verb.
+
 ### CommonJS
 
 ```js

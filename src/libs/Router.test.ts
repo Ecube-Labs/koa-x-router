@@ -1120,3 +1120,104 @@ describe('koa-x-router API work with Joi', () => {
         });
     });
 });
+
+describe("koa-x-router API work with method: 'all'", () => {
+    it('should register a catch-all route that matches every HTTP verb', async () => {
+        const app = getApp();
+        const router = new Router();
+        app.use(router.routes());
+
+        router.add({
+            method: 'all',
+            path: '/proxy/:path(.*)',
+            handler: async (ctx) => {
+                ctx.body = `matched ${ctx.method}`;
+            },
+        });
+
+        const getResponse = await request(app.callback()).get('/proxy/foo');
+        expect(getResponse.status).toBe(200);
+        expect(getResponse.text).toBe('matched GET');
+
+        const postResponse = await request(app.callback()).post('/proxy/foo');
+        expect(postResponse.status).toBe(200);
+        expect(postResponse.text).toBe('matched POST');
+
+        const deleteResponse = await request(app.callback()).delete('/proxy/foo/bar');
+        expect(deleteResponse.status).toBe(200);
+        expect(deleteResponse.text).toBe('matched DELETE');
+    });
+
+    it("should treat method: 'ALL' (uppercase) the same as 'all'", async () => {
+        const app = getApp();
+        const router = new Router();
+        app.use(router.routes());
+
+        router.add({
+            method: 'ALL',
+            path: '/any/:path(.*)',
+            handler: async (ctx) => {
+                ctx.body = 'ok';
+            },
+        });
+
+        const putResponse = await request(app.callback()).put('/any/thing');
+        expect(putResponse.status).toBe(200);
+        expect(putResponse.text).toBe('ok');
+    });
+
+    it('should run the middleware chain for a catch-all route', async () => {
+        const app = getApp();
+        const router = new Router();
+        app.use(router.routes());
+
+        let middlewareRan = false;
+        router.use('/guarded/:path(.*)', async (_ctx, next) => {
+            middlewareRan = true;
+            await next();
+        });
+
+        router.add({
+            method: 'all',
+            path: '/guarded/:path(.*)',
+            handler: async (ctx) => {
+                ctx.body = 'guarded';
+            },
+        });
+
+        const response = await request(app.callback()).get('/guarded/foo');
+        expect(response.status).toBe(200);
+        expect(response.text).toBe('guarded');
+        expect(middlewareRan).toBe(true);
+    });
+
+    it('should expand a catch-all route into per-verb operations in the OpenAPI spec', () => {
+        const router = new Router();
+
+        router.add({
+            method: 'all',
+            path: '/proxy',
+            meta: {
+                document: {
+                    summary: 'Proxy everything',
+                },
+            },
+            handler: async (ctx) => {
+                ctx.body = {};
+            },
+        });
+
+        const spec = JSON.parse(
+            router.generateOpenApiSpecJson({
+                info: {
+                    title: 'koa-x-router',
+                    version: '1.0.0',
+                },
+            }),
+        );
+
+        const operations = Object.keys(spec.paths['/proxy']);
+        expect(operations).toEqual(expect.arrayContaining(['get', 'post', 'put', 'patch', 'delete', 'options']));
+        expect(spec.paths['/proxy'].get.summary).toBe('Proxy everything');
+    });
+});

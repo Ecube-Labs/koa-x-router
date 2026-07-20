@@ -43,6 +43,8 @@ export interface SchemaLike {}
 
 type SupportMethod = 'get' | 'post' | 'delete' | 'put' | 'options' | 'head' | 'patch' | 'trace';
 
+type AllMethod = 'all' | 'ALL';
+
 type SchemaMetadata = {
     summary: string;
     description?: string;
@@ -52,7 +54,7 @@ type SchemaMetadata = {
 };
 
 export interface RouteLayerSpec<StateT = any, CustomT = {}> {
-    method: SupportMethod | Uppercase<SupportMethod>;
+    method: SupportMethod | Uppercase<SupportMethod> | AllMethod;
     path: string;
     meta?: {
         // compatible for `koa-joi-router-docs`
@@ -93,7 +95,11 @@ export class Router<StateT = any, CustomT = {}> extends KoaRouter<StateT, Custom
         specs.forEach((spec) => {
             const { validate, meta } = spec;
 
-            const layer = super.register(spec.path, [spec.method], [spec.handler], {
+            // `method: 'all'`(대소문자 무관)은 koa-joi-router의 `router.all()`처럼
+            // 라우터가 지원하는 모든 verb에 매칭되는 catch-all로 등록한다.
+            const methods = String(spec.method).toLowerCase() === 'all' ? this.methods : [spec.method];
+
+            const layer = super.register(spec.path, methods, [spec.handler], {
                 name: spec.path,
             });
 
